@@ -1,12 +1,12 @@
 (* parser.mly *)
 
 %{
-  (* Header Section *)
-
   open Ast
   open Location
 
-  (* You can add helper functions or open additional modules here *)
+  let mk_loc startpos endpos = 
+    { Location.start_pos = startpos;
+      Location.end_pos = endpos }
 %}
 
 %token <string> IDENT
@@ -32,8 +32,6 @@
 
 %%
 
-(* Grammar Rules *)
-
 program:
   | statements EOF { $1 }
 
@@ -47,31 +45,44 @@ statement:
   | var_decl_stmt
     { VarDeclStm $1 }
   | expr_stmt
-    { ExprStm $1 }
+    { ExprStm { expr = $1; loc = mk_loc $startpos $endpos } }
   | if_stmt
-    { IfThenElseStm $1 }
+    { $1 }
   | while_stmt
-    { WhileStm $1 }
+    { $1 }
   | for_stmt
-    { ForStm $1 }
+    { $1 }
   | break_stmt
-    { BreakStm }
+    { $1 }
   | continue_stmt
-    { ContinueStm }
+    { $1 }
   | compound_stmt
-    { CompoundStm { stms = $1 } }
+    { CompoundStm { stms = $1; loc = mk_loc $startpos $endpos } }
   | return_stmt
-    { ReturnStm { ret = $1 } }
+    { ReturnStm { ret = $1; loc = mk_loc $startpos $endpos } }
 
-(* Variable Declaration Statement *)
+
+return_stmt:
+  | RETURN expr_opt SEMICOLON
+    { $2 }
+
+(* Break Statement *)
+break_stmt:
+  | BREAK SEMICOLON
+    { BreakStm { loc = mk_loc $startpos $endpos } }
+
+(* Continue Statement *)
+continue_stmt:
+  | CONTINUE SEMICOLON
+    { ContinueStm { loc = mk_loc $startpos $endpos } }
+
 var_decl_stmt:
   | VAR declaration_block SEMICOLON
     { $2 }
 
-(* Declaration Block *)
 declaration_block:
   | declarations
-    { DeclBlock $1 }
+    { DeclBlock { declarations = $1; loc = mk_loc $startpos $endpos } }
 
 declarations:
   | declaration
@@ -83,49 +94,72 @@ declaration:
   | IDENT type_opt ASSIGN expr
     { 
       Declaration { 
-        name = Ident { name = $1 }; 
+        name = Ident { name = $1; loc = mk_loc $startpos1 $endpos1 }; 
         tp = $2; 
-        body = $4 
+        body = $4;
+        loc = mk_loc $startpos $endpos 
       } 
     }
 
 type_opt:
-  | COLON type
+  | COLON type_new
     { Some $2 }
   | /* empty */
     { None }
 
-(* Expression Statement *)
 expr_stmt:
   | expr SEMICOLON
     { Some $1 }
   | SEMICOLON
     { None }
 
-(* If-Then-Else Statement *)
 if_stmt:
   | IF LPAREN expr RPAREN statement
     { 
-      { cond = $3; thbr = $5; elbro = None } 
+      IfThenElseStm {
+        cond = $3;
+        thbr = $5;
+        elbro = None;
+        loc = mk_loc $startpos $endpos
+      }
     }
   | IF LPAREN expr RPAREN statement ELSE statement
     { 
-      { cond = $3; thbr = $5; elbro = Some $7 } 
+      IfThenElseStm {
+        cond = $3;
+        thbr = $5;
+        elbro = Some $7;
+        loc = mk_loc $startpos $endpos
+      }
     }
 
-(* While Statement *)
 while_stmt:
   | WHILE LPAREN expr RPAREN statement
     { 
-      { cond = $3; body = $5 } 
+      WhileStm { 
+        cond = $3; 
+        body = $5;
+        loc = mk_loc $startpos $endpos
+      } 
     }
 
-(* For Statement *)
 for_stmt:
-  | FOR LPAREN for_init SEMICOLON expr_opt SEMICOLON expr_opt RPAREN statement
+  | FOR LPAREN for_init_opt SEMICOLON expr_opt SEMICOLON expr_opt RPAREN statement
     { 
-      { init = $3; cond = $5; update = $7; body = $9 } 
+      ForStm {
+        init = $3;
+        cond = $5;
+        update = $7;
+        body = $9;
+        loc = mk_loc $startpos $endpos
+      }
     }
+
+for_init_opt:
+  | for_init
+    { Some $1 }
+  | /* empty */
+    { None }
 
 for_init:
   | declaration_block
@@ -139,58 +173,41 @@ expr_opt:
   | /* empty */
     { None }
 
-(* Break Statement *)
-break_stmt:
-  | BREAK SEMICOLON
-    { () }
-
-(* Continue Statement *)
-continue_stmt:
-  | CONTINUE SEMICOLON
-    { () }
-
-(* Compound Statement *)
 compound_stmt:
   | LBRACE statements RBRACE
     { $2 }
 
-(* Return Statement *)
-return_stmt:
-  | RETURN expr SEMICOLON
-    { $2 }
-
-(* Expressions *)
 expr:
   | expr PLUS expr
-    { BinOp { left = $1; op = Plus; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Plus { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr MINUS expr
-    { BinOp { left = $1; op = Minus; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Minus { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr MUL expr
-    { BinOp { left = $1; op = Mul; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Mul { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr DIV expr
-    { BinOp { left = $1; op = Div; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Div { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr REM expr
-    { BinOp { left = $1; op = Rem; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Rem { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LT expr
-    { BinOp { left = $1; op = Lt; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Lt { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LE expr
-    { BinOp { left = $1; op = Le; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Le { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr GT expr
-    { BinOp { left = $1; op = Gt; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Gt { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr GE expr
-    { BinOp { left = $1; op = Ge; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Ge { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LOR expr
-    { BinOp { left = $1; op = Lor; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Lor { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LAND expr
-    { BinOp { left = $1; op = Land; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Land { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr EQ expr
-    { BinOp { left = $1; op = Eq; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = Eq { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr NEQ expr
-    { BinOp { left = $1; op = NEq; right = $3; tp = ErrorType } }
+    { BinOp { left = $1; op = NEq { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
   | MINUS expr %prec UMINUS
-    { UnOp { op = Neg; operand = $2; tp = ErrorType } }
+    { UnOp { op = Neg { loc = mk_loc $startpos1 $endpos1 }; operand = $2; loc = mk_loc $startpos $endpos } }
   | LNOT expr %prec LNOT
-    { UnOp { op = Lnot; operand = $2; tp = ErrorType } }
+    { UnOp { op = Lnot { loc = mk_loc $startpos1 $endpos1 }; operand = $2; loc = mk_loc $startpos $endpos } }
   | LPAREN expr RPAREN
     { $2 }
   | lval
@@ -200,36 +217,33 @@ expr:
   | call
     { $1 }
   | INT_LIT
-    { Integer { int = $1 } }
+    { Integer { int = $1; loc = mk_loc $startpos $endpos } }
   | TRUE
-    { Boolean { bool = true } }
+    { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
-    { Boolean { bool = false } }
+    { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
 
-(* L-values *)
 lval:
   | IDENT
-    { Var { ident = Ident { name = $1 }; tp = ErrorType } }
+    { Var (Ident { name = $1; loc = mk_loc $startpos $endpos }) }
 
-(* Assignments *)
 assignment:
   | lval ASSIGN expr
     { 
       Assignment { 
         lvl = $1; 
-        rhs = $3; 
-        tp = ErrorType 
+        rhs = $3;
+        loc = mk_loc $startpos $endpos 
       } 
     }
 
-(* Function Calls *)
 call:
   | IDENT LPAREN arg_list RPAREN
     { 
       Call { 
-        fname = Ident { name = $1 }; 
-        args = $3; 
-        tp = ErrorType 
+        fname = Ident { name = $1; loc = mk_loc $startpos1 $endpos1 }; 
+        args = $3;
+        loc = mk_loc $startpos $endpos 
       } 
     }
 
@@ -241,17 +255,8 @@ arg_list:
   | /* empty */
     { [] }
 
-(* Types *)
-type:
+type_new:
   | INT
-    { Int }
+    { Int { loc = mk_loc $startpos $endpos } }
   | BOOL
-    { Bool }
-  | STRING
-    { String }
-  | BYTE
-    { Byte }
-  | VOID
-    { Void }
-  | RECORD
-    { Record }
+    { Bool { loc = mk_loc $startpos $endpos } }

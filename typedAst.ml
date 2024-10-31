@@ -1,4 +1,5 @@
 (* -- Use this in your solution without modifications *)
+
 module Sym = Symbol
 
 type ident = Ident of {sym : Sym.symbol}

@@ -48,7 +48,7 @@ let digit = ['0'-'9']
 let nondigit = ['a'-'z' 'A'-'Z' '_']
 let ident = nondigit (nondigit | digit)*
 let int_lit = ['-']? digit+
-let string_lit = '\"' ( '\\' . | [^ '\"' '\\'] )* '\"'
+let string_lit = '\"' ( '\\' | [^ '\"' '\\'] )* '\"'
 let anychar = _
 
 rule tokenize = parse

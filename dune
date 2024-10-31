@@ -1,5 +1,5 @@
 (executable
- (name test)
- (modules test ast typedAst errors env symbol semant typedPretty pretty codegen ll cfgBuilder)
+ (name lexer)
+ (modules lexer parser ast location)
  (libraries unix printbox printbox-text)
  (flags (:standard -w -32 -w -33 -w -23 -w -27 -w -26)))
