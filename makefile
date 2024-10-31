@@ -1,21 +1,13 @@
 # Compiler and flags
-OCAMLC=ocamlfind ocamlc -package printbox -linkpkg
+OCAMLC=ocamlfind ocamlc -package printbox,printbox-text -linkpkg
 OCAMLLEX=ocamllex
 MENHIR=menhir
 
 # Files
-SOURCES=Location.ml Ast.ml parser.ml lexer.ml pretty.ml test.ml
+SOURCES=Location.ml Ast.ml lexer.ml pretty.ml test.ml
 EXECUTABLE=parser.exe
 
 all: $(EXECUTABLE)
-
-# Generate lexer from .mll
-lexer.ml: lexer.mll
-	$(OCAMLLEX) lexer.mll
-
-# Generate parser from .mly
-parser.ml parser.mli: parser.mly Ast.cmi
-	$(MENHIR) --infer parser.mly
 
 # Compile the Location module
 Location.cmo Location.cmi: Location.ml
@@ -25,12 +17,29 @@ Location.cmo Location.cmi: Location.ml
 Ast.cmo Ast.cmi: Location.cmo Ast.ml
 	$(OCAMLC) -c Ast.ml
 
-# Compile all sources into executable
-$(EXECUTABLE): Location.cmo Ast.cmo parser.mli parser.ml lexer.ml pretty.ml test.ml
-	$(OCAMLC) -o $(EXECUTABLE) Location.cmo Ast.cmo $(SOURCES)
+# Generate lexer from .mll
+lexer.ml: lexer.mll
+	$(OCAMLLEX) lexer.mll
 
+# Generate parser from .mly
+parser.ml parser.mli: parser.mly Ast.cmi
+	$(MENHIR) parser.mly
+
+# Compile parser after it's generated
+parser.cmi: parser.mli
+	$(OCAMLC) -c parser.mli
+
+parser.cmo: parser.ml parser.cmi
+	$(OCAMLC) -c parser.ml
+
+# Compile all sources into executable
+$(EXECUTABLE): Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml test.ml
+	$(OCAMLC) -o $(EXECUTABLE) Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml test.ml
+
+# Test the executable
 test: $(EXECUTABLE)
 	./$(EXECUTABLE) test.txt
 
+# Clean up generated files
 clean:
 	rm -f *.cmo *.cmi *.exe lexer.ml parser.ml parser.mli *.o

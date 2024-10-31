@@ -21,6 +21,30 @@
 
 %start program
 %type <Ast.program> program
+%type <Ast.statement list> statements
+%type <Ast.statement> statement
+%type <Ast.statement> var_decl_stmt
+%type <Ast.statement> expr_stmt
+%type <Ast.statement> if_stmt
+%type <Ast.statement> while_stmt
+%type <Ast.statement> for_stmt
+%type <Ast.for_init option> for_init_opt
+%type <Ast.for_init> for_init
+%type <Ast.statement> break_stmt
+%type <Ast.statement> continue_stmt
+%type <Ast.statement> compound_stmt
+%type <Ast.statement> return_stmt
+%type <Ast.declaration_block> declaration_block
+%type <Ast.single_declaration list> declarations
+%type <Ast.single_declaration> declaration
+%type <Ast.typ option> type_opt
+%type <Ast.expr option> expr_opt
+%type <Ast.expr> expr
+%type <Ast.lval> lval
+%type <Ast.expr> assignment
+%type <Ast.expr> call
+%type <Ast.expr list> arg_list
+%type <Ast.typ> type_expr
 
 %left LOR
 %left LAND
@@ -43,9 +67,9 @@ statements:
 
 statement:
   | var_decl_stmt
-    { VarDeclStm $1 }
+    { $1 }
   | expr_stmt
-    { ExprStm { expr = $1; loc = mk_loc $startpos $endpos } }
+    { $1 }
   | if_stmt
     { $1 }
   | while_stmt
@@ -57,29 +81,26 @@ statement:
   | continue_stmt
     { $1 }
   | compound_stmt
-    { CompoundStm { stms = $1; loc = mk_loc $startpos $endpos } }
+    { CompoundStm { stms = [$1]; loc = mk_loc $startpos $endpos } }
   | return_stmt
-    { ReturnStm { ret = $1; loc = mk_loc $startpos $endpos } }
-
+    { $1 }
 
 return_stmt:
-  | RETURN expr_opt SEMICOLON
-    { $2 }
+  | RETURN expr SEMICOLON
+    { ReturnStm { ret = $2; loc = mk_loc $startpos $endpos } }
 
-(* Break Statement *)
 break_stmt:
   | BREAK SEMICOLON
     { BreakStm { loc = mk_loc $startpos $endpos } }
 
-(* Continue Statement *)
 continue_stmt:
   | CONTINUE SEMICOLON
     { ContinueStm { loc = mk_loc $startpos $endpos } }
 
 var_decl_stmt:
   | VAR declaration_block SEMICOLON
-    { $2 }
-
+    { VarDeclStm $2 }
+    
 declaration_block:
   | declarations
     { DeclBlock { declarations = $1; loc = mk_loc $startpos $endpos } }
@@ -94,7 +115,7 @@ declaration:
   | IDENT type_opt ASSIGN expr
     { 
       Declaration { 
-        name = Ident { name = $1; loc = mk_loc $startpos1 $endpos1 }; 
+        name = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
         tp = $2; 
         body = $4;
         loc = mk_loc $startpos $endpos 
@@ -102,16 +123,22 @@ declaration:
     }
 
 type_opt:
-  | COLON type_new
+  | COLON type_expr
     { Some $2 }
   | /* empty */
     { None }
 
+type_expr:
+  | INT
+    { Int { loc = mk_loc $startpos $endpos } }
+  | BOOL
+    { Bool { loc = mk_loc $startpos $endpos } }
+
 expr_stmt:
   | expr SEMICOLON
-    { Some $1 }
+    { ExprStm { expr = Some $1; loc = mk_loc $startpos $endpos } }
   | SEMICOLON
-    { None }
+    { ExprStm { expr = None; loc = mk_loc $startpos $endpos } }
 
 if_stmt:
   | IF LPAREN expr RPAREN statement
@@ -175,39 +202,38 @@ expr_opt:
 
 compound_stmt:
   | LBRACE statements RBRACE
-    { $2 }
-
+    { CompoundStm { stms = $2; loc = mk_loc $startpos $endpos } }
 expr:
   | expr PLUS expr
-    { BinOp { left = $1; op = Plus { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Plus { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr MINUS expr
-    { BinOp { left = $1; op = Minus { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Minus { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr MUL expr
-    { BinOp { left = $1; op = Mul { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Mul { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr DIV expr
-    { BinOp { left = $1; op = Div { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Div { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr REM expr
-    { BinOp { left = $1; op = Rem { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Rem { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LT expr
-    { BinOp { left = $1; op = Lt { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Lt { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LE expr
-    { BinOp { left = $1; op = Le { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Le { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr GT expr
-    { BinOp { left = $1; op = Gt { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Gt { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr GE expr
-    { BinOp { left = $1; op = Ge { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Ge { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LOR expr
-    { BinOp { left = $1; op = Lor { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Lor { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr LAND expr
-    { BinOp { left = $1; op = Land { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Land { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr EQ expr
-    { BinOp { left = $1; op = Eq { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = Eq { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr NEQ expr
-    { BinOp { left = $1; op = NEq { loc = mk_loc $startpos2 $endpos2 }; right = $3; loc = mk_loc $startpos $endpos } }
+    { BinOp { left = $1; op = NEq { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | MINUS expr %prec UMINUS
-    { UnOp { op = Neg { loc = mk_loc $startpos1 $endpos1 }; operand = $2; loc = mk_loc $startpos $endpos } }
+    { UnOp { op = Neg { loc = mk_loc $startpos $endpos }; operand = $2; loc = mk_loc $startpos $endpos } }
   | LNOT expr %prec LNOT
-    { UnOp { op = Lnot { loc = mk_loc $startpos1 $endpos1 }; operand = $2; loc = mk_loc $startpos $endpos } }
+    { UnOp { op = Lnot { loc = mk_loc $startpos $endpos }; operand = $2; loc = mk_loc $startpos $endpos } }
   | LPAREN expr RPAREN
     { $2 }
   | lval
@@ -229,19 +255,13 @@ lval:
 
 assignment:
   | lval ASSIGN expr
-    { 
-      Assignment { 
-        lvl = $1; 
-        rhs = $3;
-        loc = mk_loc $startpos $endpos 
-      } 
-    }
+    { Assignment { lvl = $1; rhs = $3; loc = mk_loc $startpos $endpos } }
 
 call:
   | IDENT LPAREN arg_list RPAREN
     { 
       Call { 
-        fname = Ident { name = $1; loc = mk_loc $startpos1 $endpos1 }; 
+        fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
         args = $3;
         loc = mk_loc $startpos $endpos 
       } 
@@ -254,9 +274,3 @@ arg_list:
     { $1 :: $3 }
   | /* empty */
     { [] }
-
-type_new:
-  | INT
-    { Int { loc = mk_loc $startpos $endpos } }
-  | BOOL
-    { Bool { loc = mk_loc $startpos $endpos } }

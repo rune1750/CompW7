@@ -4,6 +4,7 @@
   open Parser        (* Assuming your parser is named 'Parser' *)
   open Ast           (* Access to AST definitions *)
   open Location      (* Access to Location module for tracking positions *)
+  open PrintBox
 
   (* Initialize a keyword table to differentiate between keywords and identifiers *)
   let keyword_table = Hashtbl.create 20
@@ -30,16 +31,15 @@
     "void", VOID;
     "record", RECORD;
     "new", NEW;
-    "length_of", LENGTHOF;
   ]
 
   (* Helper function to create location information *)
   let make_location lexbuf =
-    let startp = Lexing.lex_start_p lexbuf in
-    let endp = Lexing.lex_curr_p lexbuf in
+    let startp = Lexing.lexeme_start_p lexbuf in
+    let endp = Lexing.lexeme_end_p lexbuf in
     Location.make_location (startp, endp)
-
 }
+
 
 (* Define regular expressions for different token categories *)
 let whitespace = [' ' '\t']+
@@ -111,23 +111,28 @@ rule tokenize = parse
     }
 
   (* Integer literals *)
-  | int_lit as num { 
-      try 
-        INT_LIT (Int64.of_string num) 
-      with 
-        Failure _ -> 
-          let loc = make_location lexbuf in
-          failwith ("Lexer error at " ^ Location.location_to_string loc ^ ": Integer literal out of bounds: " ^ num) 
-    }
-
+  | int_lit as num {
+    try
+      INT_LIT (Int64.of_string num)
+    with
+      Failure _ ->
+        let loc = make_location lexbuf in
+        (* Print the location tree to stdout *)
+        PrintBox_text.output stdout (Location.location_to_tree loc);
+        (* Raise the exception with the message *)
+        failwith ("Integer literal out of bounds: " ^ num);
+  }
   (* End of file *)
   | eof { EOF }
 
   (* Handle unexpected characters *)
-  | anychar as c { 
-      let loc = make_location lexbuf in
-      failwith ("Lexer error at " ^ Location.location_to_string loc ^ ": Unexpected character '" ^ String.escaped (String.make 1 c) ^ "'")
-    }
+  | anychar as c {
+    let loc = make_location lexbuf in
+    (* Print the location tree to stdout *)
+    PrintBox_text.output stdout (Location.location_to_tree loc);
+    (* Raise the exception with the message *)
+    failwith ("Unexpected character '" ^ String.escaped (String.make 1 c) ^ "'");
+}
 
 and comment depth = parse
   (* Nested multi-line comments: /* ... /* ... */ ... */ *)
@@ -154,6 +159,9 @@ and comment depth = parse
 
   (* Handle unexpected end of file within a comment *)
   | eof { 
-      let loc = make_location lexbuf in
-      failwith ("Lexer error at " ^ Location.location_to_string loc ^ ": Unterminated comment") 
-    }
+    let loc = make_location lexbuf in
+    (* Print the location tree to stdout *)
+    PrintBox_text.output stdout (Location.location_to_tree loc);
+    (* Raise the exception with the message *)
+    failwith "Unterminated comment";
+}

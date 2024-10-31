@@ -7,13 +7,13 @@ let parse_file filename =
     let lexbuf = Lexing.from_channel inch in
     lexbuf.Lexing.lex_curr_p <- { lexbuf.Lexing.lex_curr_p with Lexing.pos_fname = filename };
     try
-      let ast = Parser.program Lexer.token lexbuf in
+      let ast = Parser.program Lexer.tokenize lexbuf in
       close_in inch;
       printf "Parsing successful!\n";
       printf "AST:\n%!";
       (* Convert AST to pretty-printed tree and print it *)
       let tree = program_to_tree ast in
-      PBox.print_tree tree;
+      PrintBox_text.output stdout (tree);
       printf "\n%!";
       ast
     with
