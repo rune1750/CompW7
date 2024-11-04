@@ -1,0 +1,2 @@
+// test9.dlp
+10 = x;  // Left-hand side is not an l-value

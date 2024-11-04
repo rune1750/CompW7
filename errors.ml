@@ -1,3 +1,5 @@
+(* Errors.ml *)
+
 module Sym = Symbol
 module TAst = TypedAst
 module TPretty = TypedPretty
@@ -5,36 +7,42 @@ module Loc = Location
 open PrintBox
 
 (* Define the type of errors *)
-
 type error =
   | TypeMismatch of {expected : TAst.typ; actual : TAst.typ; loc : Loc.location}
-  | UndefinedVariable of {name : string}
-  | UndefinedFunction of {name : string}
-  | InvalidVoidUsage of {name : string}
-  | InvalidExpression of {msg : string}
-  | MissingReturn
-  | ArityMismatch of {expected : int; actual : int}
-  | InvalidBreakContinue of {msg : string}
+  | UndefinedVariable of {name : string; loc : Loc.location}
+  | UndefinedFunction of {name : string; loc : Loc.location}
+  | InvalidVoidUsage of {name : string; loc : Loc.location}
+  | InvalidExpression of {msg : string; loc : Loc.location}
+  | MissingReturn of {loc : Loc.location}
+  | ArityMismatch of {expected : int; actual : int; loc : Loc.location}
+  | InvalidBreakContinue of {msg : string; loc : Loc.location}
+
+(* Define custom exceptions *)
+exception LexError of string * Loc.location
+exception ParseError of string * Loc.location
+exception TypeError of error
 
 (* Convert errors to string *)
 let error_to_string err =
   match err with
   | TypeMismatch {expected; actual; loc} ->
-      let msg = Printf.sprintf "Type mismatch: expected %s but found %s"
-        (TPretty.typ_to_string expected) (TPretty.typ_to_string actual) in
-      PrintBox_text.output stdout (Location.location_to_tree loc);
+      let msg = Printf.sprintf "Type mismatch at %s: expected %s but found %s"
+        (Loc.string_of_location loc)
+        (TPretty.typ_to_string expected)
+        (TPretty.typ_to_string actual) in
       msg
-  | UndefinedVariable {name} ->
-      Printf.sprintf "Undefined variable: %s" name
-  | UndefinedFunction {name} -> 
-      Printf.sprintf "Undefined function: %s" name
-  | InvalidVoidUsage {name} -> 
-      Printf.sprintf "Invalid Void Usage: %s" name
-  | InvalidExpression {msg} -> 
-      Printf.sprintf "%s" msg
-  | MissingReturn -> 
-      Printf.sprintf "Missing return statement"
-  | ArityMismatch {expected; actual}->
-     Printf.sprintf "Number of arguments does not match function definition. Expected: %i and Actual: %i" expected actual
-  | InvalidBreakContinue {msg} -> 
-      Printf.sprintf "%s" msg
+  | UndefinedVariable {name; loc} ->
+      Printf.sprintf "Undefined variable '%s' at %s" name (Loc.string_of_location loc)
+  | UndefinedFunction {name; loc} ->
+      Printf.sprintf "Undefined function '%s' at %s" name (Loc.string_of_location loc)
+  | InvalidVoidUsage {name; loc} ->
+      Printf.sprintf "Invalid void usage '%s' at %s" name (Loc.string_of_location loc)
+  | InvalidExpression {msg; loc} ->
+      Printf.sprintf "Invalid expression at %s: %s" (Loc.string_of_location loc) msg
+  | MissingReturn {loc} ->
+      Printf.sprintf "Missing return statement at %s" (Loc.string_of_location loc)
+  | ArityMismatch {expected; actual; loc} ->
+      Printf.sprintf "Arity mismatch at %s: expected %d arguments but found %d"
+        (Loc.string_of_location loc) expected actual
+  | InvalidBreakContinue {msg; loc} ->
+      Printf.sprintf "Invalid break/continue at %s: %s" (Loc.string_of_location loc) msg

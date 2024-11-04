@@ -1,0 +1,3 @@
+// test5.dlp
+/* This is an unterminated comment
+var x = 10;

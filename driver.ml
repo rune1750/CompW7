@@ -1,6 +1,8 @@
 open Printf
 open Pretty
 open Semant
+open Errors  (* Include the Errors module *)
+open Location
 
 let parse_file filename =
   try
@@ -22,20 +24,55 @@ let parse_file filename =
     with
     | Parser.Error ->
         let pos = lexbuf.Lexing.lex_curr_p in
-        printf "Parser error at line %d, character %d\n"
-          pos.Lexing.pos_lnum
-          (pos.Lexing.pos_cnum - pos.Lexing.pos_bol);
+        eprintf "Parser error at %s\n"
+          (Location.string_of_position pos);
+        close_in inch;
+        exit 1
+    | LexError (msg, loc) ->
+        eprintf "Lexical error at %s: %s\n"
+          (Location.string_of_location loc)
+          msg;
+        close_in inch;
+        exit 1
+    | TypeError err ->
+        eprintf "Semantic error: %s\n" (Errors.error_to_string err);
         close_in inch;
         exit 1
     | e ->
         close_in inch;
         raise e
-  with Sys_error msg ->
-    printf "Cannot open file: %s\n" msg;
-    exit 1
+  with
+  | Sys_error msg ->
+      eprintf "Cannot open file: %s\n" msg;
+      exit 1
+
+(* Helper functions to format position and location *)
+module Location = struct
+  include Location
+
+  let string_of_position pos =
+    Printf.sprintf "line %d, character %d"
+      pos.Lexing.pos_lnum
+      (pos.Lexing.pos_cnum - pos.Lexing.pos_bol)
+
+  let string_of_location { start_pos; end_pos } =
+    if start_pos.pos_lnum = end_pos.pos_lnum then
+      Printf.sprintf "%s: line %d, characters %d-%d"
+        start_pos.pos_fname
+        start_pos.pos_lnum
+        (start_pos.pos_cnum - start_pos.pos_bol)
+        (end_pos.pos_cnum - end_pos.pos_bol)
+    else
+      Printf.sprintf "%s: line %d, character %d to line %d, character %d"
+        start_pos.pos_fname
+        start_pos.pos_lnum
+        (start_pos.pos_cnum - start_pos.pos_bol)
+        end_pos.pos_lnum
+        (end_pos.pos_cnum - end_pos.pos_bol)
+end
 
 let () =
   if Array.length Sys.argv <> 2 then
-    printf "Usage: %s <filename>\n" Sys.argv.(0)
+    eprintf "Usage: %s <filename>\n" Sys.argv.(0)
   else
-    ignore (parse_file Sys.argv.(1)) 
+    ignore (parse_file Sys.argv.(1))
