@@ -3,7 +3,7 @@
 set -e  # Exit immediately if a command exits with a non-zero status
 
 # Directory containing the test files
-TEST_DIR="test/assignment-06-tests"
+TEST_DIR="assignment-06-tests"
 
 # Function to print error messages and exit
 function error_exit {
@@ -44,23 +44,28 @@ echo "Running tests in $TEST_DIR..."
 
 # Iterate over all .dlp files in the test directory
 for TEST_FILE in "$TEST_DIR"/*.dlp; do
-    ((TOTAL_TESTS++))
     echo "---------------------------------------"
+    echo "Found test file: $TEST_FILE"  
+    let "TOTAL_TESTS+=1"
     echo "Test #$TOTAL_TESTS: $TEST_FILE"
 
     # Run the compiler on the test file
-    "$COMPILER" "$TEST_FILE"
-    EXIT_CODE=$?
+    echo "Running compiler: $COMPILER $TEST_FILE"
+    "$COMPILER" "$TEST_FILE" || true  # Run compiler and don't exit on error
 
+    # Check the exit code of the compiler
+    EXIT_CODE=$?
     if [ $EXIT_CODE -eq 0 ]; then
         echo "Test FAILED: Expected an error but compiler exited with code 0."
-        ((FAILED_TESTS++))
+        let "FAILED_TESTS+=1"
     else
         echo "Test PASSED: Compiler reported an error as expected."
-        ((PASSED_TESTS++))
+        let "PASSED_TESTS+=1"
     fi
     echo ""
 done
+
+
 
 echo "======================================="
 echo "Test Summary:"

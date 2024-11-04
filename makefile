@@ -8,10 +8,6 @@ SOURCES=Location.ml Ast.ml lexer.ml pretty.ml driver.ml
 EXECUTABLE=parser.exe
 
 all: $(EXECUTABLE)
-
-build_driver:
-	dune build driver.exe
-	cp _build/default/driver.exe $(EXECUTABLE)
 	
 # Compile the Location module
 Location.cmo Location.cmi: Location.ml
@@ -37,8 +33,8 @@ parser.cmo: parser.ml parser.cmi
 	$(OCAMLC) -c parser.ml
 
 # Compile all sources into executable
-$(EXECUTABLE): Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml driver.ml semant.ml
-	$(OCAMLC) -o $(EXECUTABLE) Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml driver.ml semant.ml
+$(EXECUTABLE): Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml
+	$(OCAMLC) -o $(EXECUTABLE) Location.cmo Ast.cmo parser.cmo lexer.ml pretty.ml
 
 # Test the executable
 test: $(EXECUTABLE)
