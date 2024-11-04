@@ -1,15 +1,38 @@
 #!/bin/bash
 
+set -e  # Exit immediately if a command exits with a non-zero status
+
 # Directory containing the test files
-TEST_DIR="assignment-06-tests"
+TEST_DIR="test/assignment-06-tests"
+
+# Function to print error messages and exit
+function error_exit {
+    echo "$1" >&2
+    exit 1
+}
+
+# Remove generated files to prevent conflicts
+echo "Removing existing generated files..."
+rm -f parser.ml parser.mli lexer.ml
+
+# Generate lexer.ml using ocamllex
+echo "Generating lexer.ml using ocamllex..."
+ocamllex lexer.mll || error_exit "ocamllex failed."
+
+# Generate parser.ml and parser.mli using menhir
+echo "Generating parser.ml and parser.mli using menhir..."
+menhir --infer parser.mly || error_exit "menhir failed."
+
+# Build the project using dune
+echo "Building the project with dune..."
+dune build || error_exit "Dune build failed."
 
 # Path to the compiler executable
 COMPILER="./_build/default/driver.exe"
 
 # Check if the compiler exists
 if [ ! -f "$COMPILER" ]; then
-    echo "Compiler executable not found. Please build the project using 'dune build'."
-    exit 1
+    error_exit "Compiler executable not found after build."
 fi
 
 # Initialize counters

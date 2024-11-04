@@ -1,5 +1,5 @@
 (executable
  (name driver)
- (modules driver location ast semant lexer parser pretty typedAst typedPretty errors symbol env)
+ (modules driver location ll cfgBuilder codegen ast semant lexer parser pretty typedAst typedPretty errors symbol env)
  (libraries printbox printbox-text)
  (flags (:standard -w -32 -w -33 -w -23 -w -27 -w -26)))

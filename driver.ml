@@ -1,7 +1,8 @@
 open Printf
 open Pretty
 open Semant
-open Errors  (* Include the Errors module *)
+open Codegen     (* Include the Codegen module *)
+open Errors
 open Location
 
 let parse_file filename =
@@ -16,11 +17,17 @@ let parse_file filename =
       printf "AST:\n%!";
       (* Convert AST to pretty-printed tree and print it *)
       let tree = program_to_tree ast in
-      PrintBox_text.output stdout (tree);
+      PrintBox_text.output stdout tree;
       printf "\n%!";
       (* Perform semantic analysis *)
-      ignore (Semant.typecheck_prog ast);
-      ast
+      let typed_ast = Semant.typecheck_prog ast in
+      printf "Semantic analysis successful!\n";
+      (* Generate code *)
+      let code = Codegen.generate_code typed_ast in
+      printf "Code generation successful!\n";
+      (* Output the generated code *)
+      printf "Generated Code:\n%s\n" code;
+      ()
     with
     | Parser.Error ->
         let pos = lexbuf.Lexing.lex_curr_p in
@@ -75,4 +82,4 @@ let () =
   if Array.length Sys.argv <> 2 then
     eprintf "Usage: %s <filename>\n" Sys.argv.(0)
   else
-    ignore (parse_file Sys.argv.(1))
+    parse_file Sys.argv.(1)
