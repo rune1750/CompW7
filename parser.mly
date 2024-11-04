@@ -11,11 +11,12 @@
 
 %token <string> IDENT
 %token <int64> INT_LIT
-%token TRUE FALSE VAR IF ELSE WHILE FOR BREAK CONTINUE RETURN
-%token INT BOOL
+%token <string> STRING_LIT
+%token TRUE FALSE VAR IF ELSE WHILE FOR BREAK CONTINUE RETURN BYTE NIL LET NEW 
+%token INT BOOL STRING VOID RECORD QUESTIONMARK DOT
 %token PLUS MINUS MUL DIV REM LT LE GT GE LOR LAND LNOT
 %token EQ NEQ ASSIGN COLON COMMA SEMICOLON
-%token LBRACE RBRACE LPAREN RPAREN
+%token LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET
 %token EOF
 
 %start program
@@ -80,7 +81,7 @@ statement:
   | continue_stmt
       { $1 }
   | compound_stmt
-      { CompoundStm { stms = $1; loc = mk_loc $startpos $endpos } }
+      { CompoundStm { stms = [$1]; loc = mk_loc $startpos $endpos } }
   | return_stmt
       { $1 }
 

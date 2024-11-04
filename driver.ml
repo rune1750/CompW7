@@ -4,6 +4,7 @@ open Semant
 open Codegen     (* Include the Codegen module *)
 open Errors
 open Location
+open Ll
 
 let parse_file filename =
   try
@@ -23,9 +24,10 @@ let parse_file filename =
       let typed_ast = Semant.typecheck_prog ast in
       printf "Semantic analysis successful!\n";
       (* Generate code *)
-      let code = Codegen.generate_code typed_ast in
+      let code = Codegen.codegen_prog typed_ast in
       printf "Code generation successful!\n";
       (* Output the generated code *)
+      let code = Ll.string_of_prog code in
       printf "Generated Code:\n%s\n" code;
       ()
     with
