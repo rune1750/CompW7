@@ -156,6 +156,7 @@ let convert_binop op =
 
     let typecheck_declaration_block (env : environment) (Ast.DeclBlock decls) =
       (* Fold over the declarations and process each one *)
+      let decls = decls.declarations in
       let new_env, typed_decls = List.fold_left process_single_decl (env, []) decls in
       (TypedAst.DeclBlock (List.rev typed_decls), new_env)
 
@@ -164,6 +165,7 @@ let convert_binop op =
 
       | VarDeclStm (DeclBlock declarations) ->
         (* Fold over the list of declarations, processing each one in sequence *)
+        let declarations = declarations.declarations in
         let final_env, typed_decls = List.fold_left process_single_decl (env, []) declarations in
     
         (* Reverse the list of typed declarations since fold_left accumulates them in reverse order *)
@@ -254,7 +256,7 @@ let convert_binop op =
       | IfThenElseStm {cond; thbr; elbro; loc} ->
           let tcond, cond_tp = infertype_expr env cond in
           if cond_tp <> TAst.Bool then
-            raise (TypeError (TypeMismatch {expected = TAst.Bool; actual = cond_tp; loc = cond.loc}));
+            raise (TypeError (TypeMismatch {expected = TAst.Bool; actual = cond_tp; loc = loc}));
           let tthbr, _ = typecheck_statement env thbr in
           let telbro, _ = match elbro with
             | Some elbr -> let telbr, _ = typecheck_statement env elbr in Some telbr, env

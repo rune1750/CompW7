@@ -14,11 +14,4 @@
 #  ; build_dir = In_build_dir "default"
 #  ; instrument_with = []
 #  }
-$ /root/.opam/5.2.0/bin/ocamlc.opt -config > /tmp/dune_5986f7_output
-$ (cd _build/default && /root/.opam/5.2.0/bin/ocamldep.opt -modules -impl semant.ml) > _build/default/.driver.eobjs/dune__exe__Semant.impl.d
-$ (cd _build/default && /root/.opam/5.2.0/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -32 -w -33 -w -23 -w -27 -w -26 -g -bin-annot -bin-annot-occurrences -I .driver.eobjs/byte -I /root/.opam/5.2.0/lib/printbox -I /root/.opam/5.2.0/lib/printbox-text -I /root/.opam/5.2.0/lib/uucp -I /root/.opam/5.2.0/lib/uutf -no-alias-deps -opaque -open Dune__exe -o .driver.eobjs/byte/dune__exe__Semant.cmo -c -impl semant.ml)
-> File "semant.ml", line 166, characters 12-17:
-> 166 |             decls 
->                   ^^^^^
-> Error: This form is not allowed as the type of the inlined record could escape.
-[2]
+$ /root/.opam/5.2.0/bin/ocamlc.opt -config > /tmp/dune_a3b1a4_output

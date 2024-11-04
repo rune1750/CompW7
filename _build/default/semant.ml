@@ -122,64 +122,54 @@ let convert_binop op =
               (TypedAst.Var {ident = TypedAst.Ident {sym = Symbol.symbol name}; tp}, tp)
           | None -> raise (TypeError (UndefinedVariable {name}))
 
-    let make_typed_declaration name tp body = 
-      TypedAst.Declaration {
-        name = TypedAst.Ident { sym = Symbol.symbol name };
-        tp = tp;
-        body = body;
-      }
-
-    let process_single_decl (env, typed_decls) (Ast.Declaration {name; tp; body; loc}) =
-      (* Extract the name from the ident *)
-      let Ident {name = id_name; _} = name in
-      
-      (* Infer the type of the initialization expression *)
-      let texpr, expr_tp = infertype_expr env body in
-      
-      (* Convert the explicitly declared type, if present *)
-      let declared_tp = match tp with
-        | Some declared_tp -> convert_type declared_tp
-        | None -> expr_tp (* If no type is provided, infer from expression *)
-      in
-      
-      (* Type check *)
-      if declared_tp <> expr_tp then
-        raise (TypeError (TypeMismatch {
-          expected = declared_tp;
-          actual = expr_tp;
-          loc = loc
-        }));
-      
-      (* Insert into environment *)
-      let new_env = insert_local_decl env id_name declared_tp in
-      
-      (* Create and accumulate typed declaration *)
-      let typed_decl = make_typed_declaration id_name declared_tp texpr in
-      (new_env, typed_decl :: typed_decls)
+    let process_single_decl (env, typed_decls: environment * single_declaration list) 
+    (Ast.Declaration {name; tp; body; loc}) =
+    (* Extract the name from the ident *)
+    let Ident {name = id_name ; _} = name in
+    
+    (* Infer the type of the initialization expression *)
+    let texpr, expr_tp = infertype_expr env body in
+  
+    (* Convert the explicitly declared type, if present *)
+    let declared_tp = match tp with
+      | Some declared_tp -> convert_type declared_tp
+      | None -> expr_tp (* If no type is provided, infer from the expression *)
+    in
+  
+    (* Ensure the declared type matches the expression type *)
+    if declared_tp <> expr_tp then
+      raise (TypeError (TypeMismatch {expected = declared_tp; actual = expr_tp; loc = loc}));
+  
+    (* Insert the new variable into the environment using its name (id_name) *)
+    let new_env = insert_local_decl env id_name declared_tp in
+  
+    (* Create the typed declaration *)
+    let typed_decl = TypedAst.Declaration {
+      name = TypedAst.Ident { sym = Symbol.symbol id_name };
+      tp = declared_tp;
+      body = texpr;
+    } in
+  
+    (* Return the updated environment and accumulate the typed declaration *)
+    (new_env, (typed_decl :> single_declaration) :: typed_decls)
     
 
-      let typecheck_declaration_block (env : environment) (Ast.DeclBlock decls) =
-        let new_env, typed_decls = 
-          List.fold_left 
-            process_single_decl 
-            (env, []) 
-            decls 
-        in
-        (TypedAst.DeclBlock (List.rev typed_decls), new_env)
+    let typecheck_declaration_block (env : environment) (Ast.DeclBlock decls) =
+      (* Fold over the declarations and process each one *)
+      let decls = decls.declarations in
+      let new_env, typed_decls = List.fold_left process_single_decl (env, []) decls in
+      (TypedAst.DeclBlock (List.rev typed_decls), new_env)
 
     let rec typecheck_statement env (stm: Ast.statement) =
       match stm with
 
-      | Ast.VarDeclStm (DeclBlock declarations) ->
-        let final_env, typed_decls = 
-          List.fold_left 
-            process_single_decl 
-            (env, []) 
-            declarations 
-        in
-        TypedAst.VarDeclStm (TypedAst.DeclBlock (List.rev typed_decls)), 
-        final_env
-        
+      | VarDeclStm (DeclBlock declarations) ->
+        (* Fold over the list of declarations, processing each one in sequence *)
+        let declarations = declarations.declarations in
+        let final_env, typed_decls = List.fold_left process_single_decl (env, []) declarations in
+    
+        (* Reverse the list of typed declarations since fold_left accumulates them in reverse order *)
+        TypedAst.VarDeclStm (TypedAst.DeclBlock (List.rev typed_decls)), final_env
       | BreakStm _ ->
           if not env.in_loop then
             raise (TypeError (InvalidBreakContinue {msg = "Break statement outside of loop"}));
@@ -266,7 +256,7 @@ let convert_binop op =
       | IfThenElseStm {cond; thbr; elbro; loc} ->
           let tcond, cond_tp = infertype_expr env cond in
           if cond_tp <> TAst.Bool then
-            raise (TypeError (TypeMismatch {expected = TAst.Bool; actual = cond_tp; loc = cond.loc}));
+            raise (TypeError (TypeMismatch {expected = TAst.Bool; actual = cond_tp; loc = loc}));
           let tthbr, _ = typecheck_statement env thbr in
           let telbro, _ = match elbro with
             | Some elbr -> let telbr, _ = typecheck_statement env elbr in Some telbr, env

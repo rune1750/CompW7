@@ -17,7 +17,7 @@ let parse_file filename =
       PrintBox_text.output stdout (tree);
       printf "\n%!";
       (* Perform semantic analysis *)
-      Semant.typecheck_program ast;
+      ignore (Semant.typecheck_prog ast);
       ast
     with
     | Parser.Error ->
