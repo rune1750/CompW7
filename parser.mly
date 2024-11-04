@@ -46,6 +46,7 @@
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
 
+%nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 %left LOR
 %left LAND
@@ -141,7 +142,7 @@ expr_stmt:
       { ExprStm { expr = None; loc = mk_loc $startpos $endpos } }
 
 if_stmt:
-    IF LPAREN expr RPAREN statement
+    IF LPAREN expr RPAREN statement %prec LOWER_THAN_ELSE
       {
         IfThenElseStm {
           cond = $3;
@@ -189,8 +190,8 @@ for_init_opt:
       { None }
 
 for_init:
-    declaration_block
-      { FIDecl $1 }
+    VAR declaration_block
+      { FIDecl $2 }
   | expr
       { FIExpr $1 }
 
