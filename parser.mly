@@ -46,12 +46,12 @@
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
 
+%nonassoc ELSE
 %left LOR
 %left LAND
-%nonassoc EQ NEQ
-%nonassoc LT LE GT GE
 %left PLUS MINUS
 %left MUL DIV REM
+%nonassoc EQ NEQ LT LE GT GE
 %right UMINUS LNOT
 
 %%
@@ -142,7 +142,7 @@ expr_stmt:
 
 if_stmt:
     IF LPAREN expr RPAREN statement
-      { 
+      {
         IfThenElseStm {
           cond = $3;
           thbr = $5;
@@ -150,8 +150,8 @@ if_stmt:
           loc = mk_loc $startpos $endpos
         }
       }
-  | IF LPAREN expr RPAREN statement ELSE statement
-      { 
+  | IF LPAREN expr RPAREN statement ELSE if_stmt
+      {
         IfThenElseStm {
           cond = $3;
           thbr = $5;
@@ -255,7 +255,7 @@ lval:
       { Var (Ident { name = $1; loc = mk_loc $startpos $endpos }) }
 
 assignment:
-    lval ASSIGN expr
+    lval ASSIGN expr %prec EQ
       { Assignment { lvl = $1; rhs = $3; loc = mk_loc $startpos $endpos } }
 
 call:
