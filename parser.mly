@@ -48,11 +48,11 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
+%nonassoc EQ NEQ LT LE GT GE
 %left LOR
 %left LAND
 %left PLUS MINUS
 %left MUL DIV REM
-%nonassoc EQ NEQ LT LE GT GE
 %right UMINUS LNOT
 
 %%

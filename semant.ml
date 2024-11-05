@@ -271,9 +271,6 @@ let typecheck_prog (prog: Ast.program) : TypedAst.program =
         let typed_stm, new_env = typecheck_statement env stm in
         check_statements new_env (typed_stm :: acc) stms
   in
-  try check_statements env [] prog
-  with
-    | TypeError err ->
-        let err_str = error_to_string err in
-        Printf.eprintf "Semantic error: %s in statement %i\n" err_str !stm_counter;
-        exit 1
+  check_statements env [] prog
+
+

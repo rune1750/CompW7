@@ -1,0 +1,3 @@
+// test7.dlp
+if (x > 0) {
+    print_integer(x);

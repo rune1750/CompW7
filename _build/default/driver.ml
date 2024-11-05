@@ -6,7 +6,7 @@ open Errors
 open Location
 open Ll
 
-let parse_file filename =
+let compile_prog filename =
   try
     let inch = open_in filename in
     let lexbuf = Lexing.from_channel inch in
@@ -84,4 +84,4 @@ let () =
   if Array.length Sys.argv <> 2 then
     eprintf "Usage: %s <filename>\n" Sys.argv.(0)
   else
-    parse_file Sys.argv.(1)
+    compile_prog Sys.argv.(1)
