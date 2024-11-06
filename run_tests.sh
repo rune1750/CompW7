@@ -2,6 +2,7 @@
 
 set -e  # Exit immediately if a command exits with a non-zero status
 
+
 # Directory containing the test files
 TEST_DIR="assignment-06-failing-tests"
 TEST_DIR2="assignment-06-passing-tests"
@@ -12,9 +13,14 @@ function error_exit {
     exit 1
 }
 
+
+
 # Remove generated files to prevent conflicts
 echo "Removing existing generated files..."
-rm -f parser.ml parser.mli lexer.ml
+rm -f parser.ml parser.mli lexer.ml test_output.txt
+
+LOG_FILE="test_output.txt"
+exec > "$LOG_FILE" 2>&1
 
 # Generate lexer.ml using ocamllex
 echo "Generating lexer.ml using ocamllex..."
@@ -56,12 +62,12 @@ for TEST_FILE in "$TEST_DIR"/*.dlp; do
 
     # Check the exit code of the compiler
     EXIT_CODE=$?
-    if [ $EXIT_CODE eq 0 ]; then
-        echo "Test FAILED: Expected an error but compiler exited with code 0."
-        let "FAILED_TESTS+=1"
-    else
+    if [ $EXIT_CODE -eq 1 ]; then
         echo "Test PASSED: Compiler reported an error as expected."
         let "PASSED_TESTS+=1"
+    else
+        echo "Test FAILED: Compiler did not report an error as expected."
+        let "FAILED_TESTS+=1"
     fi
     echo ""
 done
@@ -74,6 +80,9 @@ echo "Total Tests Run: $TOTAL_TESTS"
 echo "Passed Tests:    $PASSED_TESTS"
 echo "Failed Tests:    $FAILED_TESTS"
 echo "======================================="
+
+
+
 
 # Initialize counters
 TOTAL_TESTS=0
@@ -95,12 +104,12 @@ for TEST_FILE in "$TEST_DIR2"/*.dlp; do
 
     # Check the exit code of the compiler
     EXIT_CODE=$?
-    if [ $EXIT_CODE -eq 1 ]; then
+    if [ $EXIT_CODE -eq 0 ]; then
         echo "TEST PASSED"
         let "PASSED_TESTS+=1"
     else
-        echo "Test PASSED: Compiler reported an error as expected."
-        let "PASSED_TESTS+=1"
+        echo "Test FAILED"
+        let "FAILED_TESTS+=1"
     fi
     echo ""
 done

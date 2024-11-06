@@ -84,4 +84,10 @@ let () =
   if Array.length Sys.argv <> 2 then
     eprintf "Usage: %s <filename>\n" Sys.argv.(0)
   else
-    compile_prog Sys.argv.(1)
+    try
+      compile_prog Sys.argv.(1);
+      printf "Compilation successful!\n";
+      exit 0
+    with e -> 
+      eprintf "An error occurred: %s\n" (Printexc.to_string e);
+      exit 1
