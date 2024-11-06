@@ -2,22 +2,22 @@ declare i64 @read_integer()
 declare void @print_integer(i64)
 
 define i64 @dolphin_main () {
- %z28 = alloca i1
- %y27 = alloca i1
- %x26 = alloca i1
- store i1 1, i1* %x26
- store i1 0, i1* %y27
- %tmp29 = alloca i1
- %x_val32 = load i1, i1* %x26
- store i1 %x_val32, i1* %tmp29
- br i1 %x_val32, label %end31, label %right_eval30
-right_eval30:
- %tmp33 = sdiv i64 1, 0
- %tmp34 = icmp eq i64 %tmp33, 0
- store i1 %tmp34, i1* %tmp29
- br label %end31
-end31:
- %tmp_val35 = load i1, i1* %tmp29
- store i1 %tmp_val35, i1* %z28
- ret i64 0
+ %x1 = alloca i64
+ store i64 10, i64* %x1
+ %x_val2 = load i64, i64* %x1
+ %tmp3 = icmp slt i64 %x_val2, 20
+ br i1 %tmp3, label %then4, label %else5
+then4:
+ %x_val7 = load i64, i64* %x1
+ %tmp8 = add i64 %x_val7, 7
+ store i64 %tmp8, i64* %x1
+ br label %if_end6
+else5:
+ %x_val9 = load i64, i64* %x1
+ %tmp10 = sub i64 %x_val9, 5
+ store i64 %tmp10, i64* %x1
+ br label %if_end6
+if_end6:
+ %x_val11 = load i64, i64* %x1
+ ret i64 %x_val11
 }

@@ -151,7 +151,7 @@ if_stmt:
           loc = mk_loc $startpos $endpos
         }
       }
-  | IF LPAREN expr RPAREN statement ELSE if_stmt
+  | IF LPAREN expr RPAREN statement ELSE statement
       {
         IfThenElseStm {
           cond = $3;
