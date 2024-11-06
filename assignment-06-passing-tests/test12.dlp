@@ -1,0 +1,5 @@
+// test1.dlp
+var a = 10;
+var b = 20;
+var is_equal = (a == b);
+return 0;

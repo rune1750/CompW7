@@ -1,0 +1,8 @@
+// test1.dlp
+var x = 5;
+{
+    var x = 10;
+    print_integer(x);
+}
+print_integer(x);
+return 0;

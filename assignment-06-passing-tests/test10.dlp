@@ -1,0 +1,5 @@
+// test1.dlp
+var x = true;
+var y = false;
+var z = x || ((1 / 0) == 0);  // Tests short-circuiting; the right side should not evaluate
+return 0;

@@ -95,7 +95,7 @@ for TEST_FILE in "$TEST_DIR2"/*.dlp; do
 
     # Check the exit code of the compiler
     EXIT_CODE=$?
-    if [ $EXIT_CODE eq 1 ]; then
+    if [ $EXIT_CODE -eq 1 ]; then
         echo "TEST PASSED"
         let "PASSED_TESTS+=1"
     else
