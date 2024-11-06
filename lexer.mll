@@ -5,6 +5,7 @@
   open Ast           (* Access to AST definitions *)
   open Location      (* Access to Location module for tracking positions *)
   open PrintBox
+  open Errors
 
   (* Initialize a keyword table to differentiate between keywords and identifiers *)
   let keyword_table = Hashtbl.create 20
@@ -118,9 +119,7 @@ rule tokenize = parse
       Failure _ ->
         let loc = make_location lexbuf in
         (* Print the location tree to stdout *)
-        PrintBox_text.output stdout (Location.location_to_tree loc);
-        (* Raise the exception with the message *)
-        failwith ("Integer literal out of bounds: " ^ num);
+        raise (Errors.LexError ("Invalid integer literal", loc))
   }
   (* End of file *)
   | eof { EOF }
@@ -129,9 +128,7 @@ rule tokenize = parse
   | anychar as c {
     let loc = make_location lexbuf in
     (* Print the location tree to stdout *)
-    PrintBox_text.output stdout (Location.location_to_tree loc);
-    (* Raise the exception with the message *)
-    failwith ("Unexpected character '" ^ String.escaped (String.make 1 c) ^ "'");
+    raise (Errors.LexError("Unexpected character: " ^ Char.escaped c, loc))
 }
 
 and comment depth = parse
@@ -161,7 +158,5 @@ and comment depth = parse
   | eof { 
     let loc = make_location lexbuf in
     (* Print the location tree to stdout *)
-    PrintBox_text.output stdout (Location.location_to_tree loc);
-    (* Raise the exception with the message *)
-    failwith "Unterminated comment";
+    raise (Errors.LexError("Unexpected end of file within a comment", loc))
 }

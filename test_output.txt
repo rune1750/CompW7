@@ -28,80 +28,223 @@ Warning: the token VOID is unused.
 Building the project with dune...
 Running tests in assignment-06-failing-tests...
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test1.dlp
-Test #1: assignment-06-failing-tests/test1.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test1.dlp
-[36m@ 2:8-27[0mAn error occurred: Failure("Integer literal out of bounds: 9223372036854775808")
+Found test file: assignment-06-failing-tests/test01.dlp
+Test #1: assignment-06-failing-tests/test01.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test01.dlp
+Lexical error at line 2, characters 8-27: Invalid integer literal
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test02.dlp
+Test #2: assignment-06-failing-tests/test02.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test02.dlp
+Lexical error at line 2, characters 8-9: Unexpected character: "
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test03.dlp
+Test #3: assignment-06-failing-tests/test03.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test03.dlp
+Parser error at line 2, character 5
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test04.dlp
+Test #4: assignment-06-failing-tests/test04.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test04.dlp
+Lexical error at line 2, characters 11-12: Unexpected character: @
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test05.dlp
+Test #5: assignment-06-failing-tests/test05.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test05.dlp
+Lexical error at line 3, characters 11-11: Unexpected end of file within a comment
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test06.dlp
+Test #6: assignment-06-failing-tests/test06.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test06.dlp
+Parser error at line 3, character 3
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test07.dlp
+Test #7: assignment-06-failing-tests/test07.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test07.dlp
+Parser error at line 3, character 21
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test08.dlp
+Test #8: assignment-06-failing-tests/test08.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test08.dlp
+Parser error at line 3, character 4
+Test FAILED: Compiler did not report an error as expected.
+
+---------------------------------------
+Found test file: assignment-06-failing-tests/test09.dlp
+Test #9: assignment-06-failing-tests/test09.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test09.dlp
+Parser error at line 2, character 4
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
 Found test file: assignment-06-failing-tests/test10.dlp
-Test #2: assignment-06-failing-tests/test10.dlp
+Test #10: assignment-06-failing-tests/test10.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test10.dlp
 Parser error at line 2, character 24
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test2.dlp
-Test #3: assignment-06-failing-tests/test2.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test2.dlp
-[36m@ 2:8-9[0mAn error occurred: Failure("Unexpected character '\\\"'")
+Found test file: assignment-06-failing-tests/test11.dlp
+Test #11: assignment-06-failing-tests/test11.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test11.dlp
+Parsing successful!
+AST:
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─ExprStm: Assignment
+│          ├─Var(x)
+│          └─BooleanLit(true)
+└─ReturnValStm: Lval
+                └─Var(x)
+Fatal error: exception Dune__exe__Semant.TypeError(_)
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test3.dlp
-Test #4: assignment-06-failing-tests/test3.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test3.dlp
-Parser error at line 2, character 5
+Found test file: assignment-06-failing-tests/test12.dlp
+Test #12: assignment-06-failing-tests/test12.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test12.dlp
+Parsing successful!
+AST:
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: Call
+│                    ├─FunName: print_integer
+│                    └─Args
+│                      └─IntLit(5)
+└─ReturnValStm: IntLit(0)
+Semantic analysis successful!
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @dolphin_main () {
+ %x1 = alloca void
+ call void @print_integer (i64 5)
+ store void null, void* %x1
+ ret i64 0
+}
+
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test4.dlp
-Test #5: assignment-06-failing-tests/test4.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test4.dlp
-[36m@ 2:11-12[0mAn error occurred: Failure("Unexpected character '@'")
+Found test file: assignment-06-failing-tests/test13.dlp
+Test #13: assignment-06-failing-tests/test13.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test13.dlp
+Parsing successful!
+AST:
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─ExprStm: BinOp
+│          ├─Lval
+│          │ └─Var(x)
+│          ├─PLUS
+│          └─IntLit(20)
+└─ReturnValStm: IntLit(0)
+Semantic analysis successful!
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @dolphin_main () {
+ %x1 = alloca i64
+ store i64 10, i64* %x1
+ %x_val2 = load i64, i64* %x1
+ %tmp3 = add i64 %x_val2, 20
+ ret i64 0
+}
+
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test5.dlp
-Test #6: assignment-06-failing-tests/test5.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test5.dlp
-[36m@ 3:11-11[0mAn error occurred: Failure("Unterminated comment")
+Found test file: assignment-06-failing-tests/test14.dlp
+Test #14: assignment-06-failing-tests/test14.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test14.dlp
+Parsing successful!
+AST:
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: y
+│            ├─Type: 
+│            └─Body: BooleanLit(true)
+├─ExprStm: Assignment
+│          ├─Var(x)
+│          └─BinOp
+│            ├─Lval
+│            │ └─Var(x)
+│            ├─PLUS
+│            └─Lval
+│              └─Var(y)
+└─ReturnValStm: IntLit(0)
+Fatal error: exception Dune__exe__Semant.TypeError(_)
 Test FAILED: Compiler did not report an error as expected.
 
 ---------------------------------------
-Found test file: assignment-06-failing-tests/test6.dlp
-Test #7: assignment-06-failing-tests/test6.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test6.dlp
-Parser error at line 3, character 3
-Test FAILED: Compiler did not report an error as expected.
+Found test file: assignment-06-failing-tests/test15.dlp
+Test #15: assignment-06-failing-tests/test15.dlp
+Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test15.dlp
+Parsing successful!
+AST:
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: BooleanLit(true)
+└─ReturnValStm: Lval
+                └─Var(x)
+Semantic analysis successful!
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
 
----------------------------------------
-Found test file: assignment-06-failing-tests/test7.dlp
-Test #8: assignment-06-failing-tests/test7.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test7.dlp
-Parser error at line 3, character 21
-Test FAILED: Compiler did not report an error as expected.
+define i64 @dolphin_main () {
+ %x1 = alloca i1
+ store i1 1, i1* %x1
+ %x_val2 = load i1, i1* %x1
+ ret i1 %x_val2
+}
 
----------------------------------------
-Found test file: assignment-06-failing-tests/test8.dlp
-Test #9: assignment-06-failing-tests/test8.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test8.dlp
-Parser error at line 3, character 4
-Test FAILED: Compiler did not report an error as expected.
-
----------------------------------------
-Found test file: assignment-06-failing-tests/test9.dlp
-Test #10: assignment-06-failing-tests/test9.dlp
-Running compiler: ./_build/default/driver.exe assignment-06-failing-tests/test9.dlp
-Parser error at line 2, character 4
 Test FAILED: Compiler did not report an error as expected.
 
 =======================================
 Test Summary:
-Total Tests Run: 10
+Total Tests Run: 15
 Passed Tests:    0
-Failed Tests:    10
+Failed Tests:    15
 =======================================
 Running tests in assignment-06-passing-tests...
 ---------------------------------------
@@ -110,27 +253,27 @@ Test #1: assignment-06-passing-tests/test01.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test01.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          ├─[34mDeclaration[0m
-│          │ ├─[36mIdent: [0m[33mx[0m
-│          │ ├─[36mType: [0m
-│          │ └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-│          ├─[34mDeclaration[0m
-│          │ ├─[36mIdent: [0m[33my[0m
-│          │ ├─[36mType: [0m
-│          │ └─[36mBody: [0m[36mIntLit([0m20[36m)[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mz[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33mx[0m[36m)[0m
-│                    ├─[34mPLUS[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33my[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33mz[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          ├─Declaration
+│          │ ├─Ident: x
+│          │ ├─Type: 
+│          │ └─Body: IntLit(10)
+│          ├─Declaration
+│          │ ├─Ident: y
+│          │ ├─Type: 
+│          │ └─Body: IntLit(20)
+│          └─Declaration
+│            ├─Ident: z
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(x)
+│                    ├─PLUS
+│                    └─Lval
+│                      └─Var(y)
+└─ReturnValStm: Lval
+                └─Var(z)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -151,7 +294,6 @@ define i64 @dolphin_main () {
  ret i64 %z_val7
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -160,63 +302,63 @@ Test #2: assignment-06-passing-tests/test02.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test02.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33msum[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-├─[34mForStm[0m
-│ ├─[36mInit: [0mForInitDecl: [34mVarDecl[0m
-│ │                    └─[34mDeclaration[0m
-│ │                      ├─[36mIdent: [0m[33mi[0m
-│ │                      ├─[36mType: [0m
-│ │                      └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33mi[0m[36m)[0m
-│ │       ├─[34mLt[0m
-│ │       └─[36mIntLit([0m10[36m)[0m
-│ ├─[36mUpdate: [0m[36mAssignment[0m
-│ │         ├─[36mVar([0m[33mi[0m[36m)[0m
-│ │         └─[36mBinOp[0m
-│ │           ├─[36mLval[0m
-│ │           │ └─[36mVar([0m[33mi[0m[36m)[0m
-│ │           ├─[34mPLUS[0m
-│ │           └─[36mIntLit([0m1[36m)[0m
-│ └─[36mBody: [0m[36mCompoundStm[0m
-│         └─[36mCompoundStm[0m
-│           ├─[34mIfStm[0m
-│           │ ├─[36mCond: [0m[36mBinOp[0m
-│           │ │       ├─[36mBinOp[0m
-│           │ │       │ ├─[36mLval[0m
-│           │ │       │ │ └─[36mVar([0m[33mi[0m[36m)[0m
-│           │ │       │ ├─[34mRem[0m
-│           │ │       │ └─[36mIntLit([0m2[36m)[0m
-│           │ │       ├─[34mEq[0m
-│           │ │       └─[36mIntLit([0m0[36m)[0m
-│           │ └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│           │                └─[36mCompoundStm[0m
-│           │                  └─[34mContinueStm[0m
-│           ├─[36mExprStm: [0m[36mAssignment[0m
-│           │          ├─[36mVar([0m[33msum[0m[36m)[0m
-│           │          └─[36mBinOp[0m
-│           │            ├─[36mLval[0m
-│           │            │ └─[36mVar([0m[33msum[0m[36m)[0m
-│           │            ├─[34mPLUS[0m
-│           │            └─[36mLval[0m
-│           │              └─[36mVar([0m[33mi[0m[36m)[0m
-│           └─[34mIfStm[0m
-│             ├─[36mCond: [0m[36mBinOp[0m
-│             │       ├─[36mLval[0m
-│             │       │ └─[36mVar([0m[33msum[0m[36m)[0m
-│             │       ├─[34mGt[0m
-│             │       └─[36mIntLit([0m20[36m)[0m
-│             └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│                            └─[36mCompoundStm[0m
-│                              └─[34mBreakStm[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33msum[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: sum
+│            ├─Type: 
+│            └─Body: IntLit(0)
+├─ForStm
+│ ├─Init: ForInitDecl: VarDecl
+│ │                    └─Declaration
+│ │                      ├─Ident: i
+│ │                      ├─Type: 
+│ │                      └─Body: IntLit(0)
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(i)
+│ │       ├─Lt
+│ │       └─IntLit(10)
+│ ├─Update: Assignment
+│ │         ├─Var(i)
+│ │         └─BinOp
+│ │           ├─Lval
+│ │           │ └─Var(i)
+│ │           ├─PLUS
+│ │           └─IntLit(1)
+│ └─Body: CompoundStm
+│         └─CompoundStm
+│           ├─IfStm
+│           │ ├─Cond: BinOp
+│           │ │       ├─BinOp
+│           │ │       │ ├─Lval
+│           │ │       │ │ └─Var(i)
+│           │ │       │ ├─Rem
+│           │ │       │ └─IntLit(2)
+│           │ │       ├─Eq
+│           │ │       └─IntLit(0)
+│           │ └─Then-Branch: CompoundStm
+│           │                └─CompoundStm
+│           │                  └─ContinueStm
+│           ├─ExprStm: Assignment
+│           │          ├─Var(sum)
+│           │          └─BinOp
+│           │            ├─Lval
+│           │            │ └─Var(sum)
+│           │            ├─PLUS
+│           │            └─Lval
+│           │              └─Var(i)
+│           └─IfStm
+│             ├─Cond: BinOp
+│             │       ├─Lval
+│             │       │ └─Var(sum)
+│             │       ├─Gt
+│             │       └─IntLit(20)
+│             └─Then-Branch: CompoundStm
+│                            └─CompoundStm
+│                              └─BreakStm
+└─ReturnValStm: Lval
+                └─Var(sum)
 Semantic analysis successful!
 test1Code generation successful!
 Generated Code:
@@ -266,7 +408,6 @@ for_end6:
  ret i64 %sum_val25
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -275,55 +416,55 @@ Test #3: assignment-06-passing-tests/test03.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test03.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mi[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-├─[34mWhileStm[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33mi[0m[36m)[0m
-│ │       ├─[34mLt[0m
-│ │       └─[36mIntLit([0m3[36m)[0m
-│ └─[36mBody: [0m[36mCompoundStm[0m
-│         └─[36mCompoundStm[0m
-│           ├─DeclStm: [34mVarDecl[0m
-│           │          └─[34mDeclaration[0m
-│           │            ├─[36mIdent: [0m[33mj[0m
-│           │            ├─[36mType: [0m
-│           │            └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-│           ├─[34mForStm[0m
-│           │ ├─[36mInit: [0m
-│           │ ├─[36mCond: [0m[36mBinOp[0m
-│           │ │       ├─[36mLval[0m
-│           │ │       │ └─[36mVar([0m[33mj[0m[36m)[0m
-│           │ │       ├─[34mLt[0m
-│           │ │       └─[36mIntLit([0m2[36m)[0m
-│           │ ├─[36mUpdate: [0m[36mAssignment[0m
-│           │ │         ├─[36mVar([0m[33mj[0m[36m)[0m
-│           │ │         └─[36mBinOp[0m
-│           │ │           ├─[36mLval[0m
-│           │ │           │ └─[36mVar([0m[33mj[0m[36m)[0m
-│           │ │           ├─[34mPLUS[0m
-│           │ │           └─[36mIntLit([0m1[36m)[0m
-│           │ └─[36mBody: [0m[36mCompoundStm[0m
-│           │         └─[36mCompoundStm[0m
-│           │           ├─[36mExprStm: [0m[36mCall[0m
-│           │           │          ├─[36mFunName: [0m[33mprint_integer[0m
-│           │           │          └─[36mArgs[0m
-│           │           │            └─[36mLval[0m
-│           │           │              └─[36mVar([0m[33mi[0m[36m)[0m
-│           │           └─[34mBreakStm[0m
-│           └─[36mExprStm: [0m[36mAssignment[0m
-│                      ├─[36mVar([0m[33mi[0m[36m)[0m
-│                      └─[36mBinOp[0m
-│                        ├─[36mLval[0m
-│                        │ └─[36mVar([0m[33mi[0m[36m)[0m
-│                        ├─[34mPLUS[0m
-│                        └─[36mIntLit([0m1[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: i
+│            ├─Type: 
+│            └─Body: IntLit(0)
+├─WhileStm
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(i)
+│ │       ├─Lt
+│ │       └─IntLit(3)
+│ └─Body: CompoundStm
+│         └─CompoundStm
+│           ├─DeclStm: VarDecl
+│           │          └─Declaration
+│           │            ├─Ident: j
+│           │            ├─Type: 
+│           │            └─Body: IntLit(0)
+│           ├─ForStm
+│           │ ├─Init: 
+│           │ ├─Cond: BinOp
+│           │ │       ├─Lval
+│           │ │       │ └─Var(j)
+│           │ │       ├─Lt
+│           │ │       └─IntLit(2)
+│           │ ├─Update: Assignment
+│           │ │         ├─Var(j)
+│           │ │         └─BinOp
+│           │ │           ├─Lval
+│           │ │           │ └─Var(j)
+│           │ │           ├─PLUS
+│           │ │           └─IntLit(1)
+│           │ └─Body: CompoundStm
+│           │         └─CompoundStm
+│           │           ├─ExprStm: Call
+│           │           │          ├─FunName: print_integer
+│           │           │          └─Args
+│           │           │            └─Lval
+│           │           │              └─Var(i)
+│           │           └─BreakStm
+│           └─ExprStm: Assignment
+│                      ├─Var(i)
+│                      └─BinOp
+│                        ├─Lval
+│                        │ └─Var(i)
+│                        ├─PLUS
+│                        └─IntLit(1)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 test1Code generation successful!
 Generated Code:
@@ -364,7 +505,6 @@ while_end4:
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -373,57 +513,57 @@ Test #4: assignment-06-passing-tests/test04.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test04.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mi[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-├─[34mWhileStm[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33mi[0m[36m)[0m
-│ │       ├─[34mLt[0m
-│ │       └─[36mIntLit([0m5[36m)[0m
-│ └─[36mBody: [0m[36mCompoundStm[0m
-│         └─[36mCompoundStm[0m
-│           ├─DeclStm: [34mVarDecl[0m
-│           │          └─[34mDeclaration[0m
-│           │            ├─[36mIdent: [0m[33mj[0m
-│           │            ├─[36mType: [0m
-│           │            └─[36mBody: [0m[36mIntLit([0m0[36m)[0m
-│           ├─[34mWhileStm[0m
-│           │ ├─[36mCond: [0m[36mBinOp[0m
-│           │ │       ├─[36mLval[0m
-│           │ │       │ └─[36mVar([0m[33mj[0m[36m)[0m
-│           │ │       ├─[34mLt[0m
-│           │ │       └─[36mIntLit([0m5[36m)[0m
-│           │ └─[36mBody: [0m[36mCompoundStm[0m
-│           │         └─[36mCompoundStm[0m
-│           │           ├─[34mIfStm[0m
-│           │           │ ├─[36mCond: [0m[36mBinOp[0m
-│           │           │ │       ├─[36mLval[0m
-│           │           │ │       │ └─[36mVar([0m[33mj[0m[36m)[0m
-│           │           │ │       ├─[34mEq[0m
-│           │           │ │       └─[36mIntLit([0m2[36m)[0m
-│           │           │ └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│           │           │                └─[36mCompoundStm[0m
-│           │           │                  └─[34mBreakStm[0m
-│           │           └─[36mExprStm: [0m[36mAssignment[0m
-│           │                      ├─[36mVar([0m[33mj[0m[36m)[0m
-│           │                      └─[36mBinOp[0m
-│           │                        ├─[36mLval[0m
-│           │                        │ └─[36mVar([0m[33mj[0m[36m)[0m
-│           │                        ├─[34mPLUS[0m
-│           │                        └─[36mIntLit([0m1[36m)[0m
-│           └─[36mExprStm: [0m[36mAssignment[0m
-│                      ├─[36mVar([0m[33mi[0m[36m)[0m
-│                      └─[36mBinOp[0m
-│                        ├─[36mLval[0m
-│                        │ └─[36mVar([0m[33mi[0m[36m)[0m
-│                        ├─[34mPLUS[0m
-│                        └─[36mIntLit([0m1[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: i
+│            ├─Type: 
+│            └─Body: IntLit(0)
+├─WhileStm
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(i)
+│ │       ├─Lt
+│ │       └─IntLit(5)
+│ └─Body: CompoundStm
+│         └─CompoundStm
+│           ├─DeclStm: VarDecl
+│           │          └─Declaration
+│           │            ├─Ident: j
+│           │            ├─Type: 
+│           │            └─Body: IntLit(0)
+│           ├─WhileStm
+│           │ ├─Cond: BinOp
+│           │ │       ├─Lval
+│           │ │       │ └─Var(j)
+│           │ │       ├─Lt
+│           │ │       └─IntLit(5)
+│           │ └─Body: CompoundStm
+│           │         └─CompoundStm
+│           │           ├─IfStm
+│           │           │ ├─Cond: BinOp
+│           │           │ │       ├─Lval
+│           │           │ │       │ └─Var(j)
+│           │           │ │       ├─Eq
+│           │           │ │       └─IntLit(2)
+│           │           │ └─Then-Branch: CompoundStm
+│           │           │                └─CompoundStm
+│           │           │                  └─BreakStm
+│           │           └─ExprStm: Assignment
+│           │                      ├─Var(j)
+│           │                      └─BinOp
+│           │                        ├─Lval
+│           │                        │ └─Var(j)
+│           │                        ├─PLUS
+│           │                        └─IntLit(1)
+│           └─ExprStm: Assignment
+│                      ├─Var(i)
+│                      └─BinOp
+│                        ├─Lval
+│                        │ └─Var(i)
+│                        ├─PLUS
+│                        └─IntLit(1)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -468,7 +608,6 @@ while_end4:
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -477,60 +616,60 @@ Test #5: assignment-06-passing-tests/test05.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test05.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33ma[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m1[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mb[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m2[36m)[0m
-├─[34mForStm[0m
-│ ├─[36mInit: [0mForInitExpr: [36mAssignment[0m
-│ │                    ├─[36mVar([0m[33ma[0m[36m)[0m
-│ │                    └─[36mIntLit([0m0[36m)[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33ma[0m[36m)[0m
-│ │       ├─[34mLt[0m
-│ │       └─[36mIntLit([0m5[36m)[0m
-│ ├─[36mUpdate: [0m[36mAssignment[0m
-│ │         ├─[36mVar([0m[33ma[0m[36m)[0m
-│ │         └─[36mBinOp[0m
-│ │           ├─[36mLval[0m
-│ │           │ └─[36mVar([0m[33ma[0m[36m)[0m
-│ │           ├─[34mPLUS[0m
-│ │           └─[36mIntLit([0m1[36m)[0m
-│ └─[36mBody: [0m[36mCompoundStm[0m
-│         └─[36mCompoundStm[0m
-│           └─[34mWhileStm[0m
-│             ├─[36mCond: [0m[36mBinOp[0m
-│             │       ├─[36mLval[0m
-│             │       │ └─[36mVar([0m[33mb[0m[36m)[0m
-│             │       ├─[34mLt[0m
-│             │       └─[36mIntLit([0m5[36m)[0m
-│             └─[36mBody: [0m[36mCompoundStm[0m
-│                     └─[36mCompoundStm[0m
-│                       ├─[34mIfStm[0m
-│                       │ ├─[36mCond: [0m[36mBinOp[0m
-│                       │ │       ├─[36mLval[0m
-│                       │ │       │ └─[36mVar([0m[33mb[0m[36m)[0m
-│                       │ │       ├─[34mEq[0m
-│                       │ │       └─[36mIntLit([0m3[36m)[0m
-│                       │ └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│                       │                └─[36mCompoundStm[0m
-│                       │                  └─[34mContinueStm[0m
-│                       └─[36mExprStm: [0m[36mAssignment[0m
-│                                  ├─[36mVar([0m[33mb[0m[36m)[0m
-│                                  └─[36mBinOp[0m
-│                                    ├─[36mLval[0m
-│                                    │ └─[36mVar([0m[33mb[0m[36m)[0m
-│                                    ├─[34mPLUS[0m
-│                                    └─[36mIntLit([0m1[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: a
+│            ├─Type: 
+│            └─Body: IntLit(1)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: b
+│            ├─Type: 
+│            └─Body: IntLit(2)
+├─ForStm
+│ ├─Init: ForInitExpr: Assignment
+│ │                    ├─Var(a)
+│ │                    └─IntLit(0)
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(a)
+│ │       ├─Lt
+│ │       └─IntLit(5)
+│ ├─Update: Assignment
+│ │         ├─Var(a)
+│ │         └─BinOp
+│ │           ├─Lval
+│ │           │ └─Var(a)
+│ │           ├─PLUS
+│ │           └─IntLit(1)
+│ └─Body: CompoundStm
+│         └─CompoundStm
+│           └─WhileStm
+│             ├─Cond: BinOp
+│             │       ├─Lval
+│             │       │ └─Var(b)
+│             │       ├─Lt
+│             │       └─IntLit(5)
+│             └─Body: CompoundStm
+│                     └─CompoundStm
+│                       ├─IfStm
+│                       │ ├─Cond: BinOp
+│                       │ │       ├─Lval
+│                       │ │       │ └─Var(b)
+│                       │ │       ├─Eq
+│                       │ │       └─IntLit(3)
+│                       │ └─Then-Branch: CompoundStm
+│                       │                └─CompoundStm
+│                       │                  └─ContinueStm
+│                       └─ExprStm: Assignment
+│                                  ├─Var(b)
+│                                  └─BinOp
+│                                    ├─Lval
+│                                    │ └─Var(b)
+│                                    ├─PLUS
+│                                    └─IntLit(1)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 test1Code generation successful!
 Generated Code:
@@ -578,7 +717,6 @@ for_end6:
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -587,21 +725,21 @@ Test #6: assignment-06-passing-tests/test06.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test06.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-├─[36mExprStm: [0m[36mAssignment[0m
-│          ├─[36mVar([0m[33mx[0m[36m)[0m
-│          └─[36mBinOp[0m
-│            ├─[36mLval[0m
-│            │ └─[36mVar([0m[33mx[0m[36m)[0m
-│            ├─[34mPLUS[0m
-│            └─[36mIntLit([0m20[36m)[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33mx[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─ExprStm: Assignment
+│          ├─Var(x)
+│          └─BinOp
+│            ├─Lval
+│            │ └─Var(x)
+│            ├─PLUS
+│            └─IntLit(20)
+└─ReturnValStm: Lval
+                └─Var(x)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -618,7 +756,6 @@ define i64 @dolphin_main () {
  ret i64 %x_val4
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -627,27 +764,27 @@ Test #7: assignment-06-passing-tests/test07.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test07.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33my[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m20[36m)[0m
-├─[36mExprStm: [0m[36mAssignment[0m
-│          ├─[36mVar([0m[33mx[0m[36m)[0m
-│          └─[36mBinOp[0m
-│            ├─[36mLval[0m
-│            │ └─[36mVar([0m[33mx[0m[36m)[0m
-│            ├─[34mMul[0m
-│            └─[36mLval[0m
-│              └─[36mVar([0m[33my[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33mx[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: y
+│            ├─Type: 
+│            └─Body: IntLit(20)
+├─ExprStm: Assignment
+│          ├─Var(x)
+│          └─BinOp
+│            ├─Lval
+│            │ └─Var(x)
+│            ├─Mul
+│            └─Lval
+│              └─Var(y)
+└─ReturnValStm: Lval
+                └─Var(x)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -667,7 +804,6 @@ define i64 @dolphin_main () {
  ret i64 %x_val6
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -676,38 +812,38 @@ Test #8: assignment-06-passing-tests/test08.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test08.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-├─[34mIfStm[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33mx[0m[36m)[0m
-│ │       ├─[34mLt[0m
-│ │       └─[36mIntLit([0m20[36m)[0m
-│ ├─[36mThen-Branch: [0m[36mCompoundStm[0m
-│ │              └─[36mCompoundStm[0m
-│ │                └─[36mExprStm: [0m[36mAssignment[0m
-│ │                           ├─[36mVar([0m[33mx[0m[36m)[0m
-│ │                           └─[36mBinOp[0m
-│ │                             ├─[36mLval[0m
-│ │                             │ └─[36mVar([0m[33mx[0m[36m)[0m
-│ │                             ├─[34mPLUS[0m
-│ │                             └─[36mIntLit([0m7[36m)[0m
-│ └─[36mElse-Branch: [0m[36mCompoundStm[0m
-│                └─[36mCompoundStm[0m
-│                  └─[36mExprStm: [0m[36mAssignment[0m
-│                             ├─[36mVar([0m[33mx[0m[36m)[0m
-│                             └─[36mBinOp[0m
-│                               ├─[36mLval[0m
-│                               │ └─[36mVar([0m[33mx[0m[36m)[0m
-│                               ├─[34mMinus[0m
-│                               └─[36mIntLit([0m5[36m)[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33mx[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─IfStm
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(x)
+│ │       ├─Lt
+│ │       └─IntLit(20)
+│ ├─Then-Branch: CompoundStm
+│ │              └─CompoundStm
+│ │                └─ExprStm: Assignment
+│ │                           ├─Var(x)
+│ │                           └─BinOp
+│ │                             ├─Lval
+│ │                             │ └─Var(x)
+│ │                             ├─PLUS
+│ │                             └─IntLit(7)
+│ └─Else-Branch: CompoundStm
+│                └─CompoundStm
+│                  └─ExprStm: Assignment
+│                             ├─Var(x)
+│                             └─BinOp
+│                               ├─Lval
+│                               │ └─Var(x)
+│                               ├─Minus
+│                               └─IntLit(5)
+└─ReturnValStm: Lval
+                └─Var(x)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -735,7 +871,6 @@ if_end6:
  ret i64 %x_val11
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -744,30 +879,30 @@ Test #9: assignment-06-passing-tests/test09.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test09.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m5[36m)[0m
-├─[36mCompoundStm[0m
-│ └─[36mCompoundStm[0m
-│   ├─DeclStm: [34mVarDecl[0m
-│   │          └─[34mDeclaration[0m
-│   │            ├─[36mIdent: [0m[33mx[0m
-│   │            ├─[36mType: [0m
-│   │            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-│   └─[36mExprStm: [0m[36mCall[0m
-│              ├─[36mFunName: [0m[33mprint_integer[0m
-│              └─[36mArgs[0m
-│                └─[36mLval[0m
-│                  └─[36mVar([0m[33mx[0m[36m)[0m
-├─[36mExprStm: [0m[36mCall[0m
-│          ├─[36mFunName: [0m[33mprint_integer[0m
-│          └─[36mArgs[0m
-│            └─[36mLval[0m
-│              └─[36mVar([0m[33mx[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(5)
+├─CompoundStm
+│ └─CompoundStm
+│   ├─DeclStm: VarDecl
+│   │          └─Declaration
+│   │            ├─Ident: x
+│   │            ├─Type: 
+│   │            └─Body: IntLit(10)
+│   └─ExprStm: Call
+│              ├─FunName: print_integer
+│              └─Args
+│                └─Lval
+│                  └─Var(x)
+├─ExprStm: Call
+│          ├─FunName: print_integer
+│          └─Args
+│            └─Lval
+│              └─Var(x)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -786,7 +921,6 @@ define i64 @dolphin_main () {
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -795,33 +929,33 @@ Test #10: assignment-06-passing-tests/test10.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test10.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBooleanLit([0m[34mtrue[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33my[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBooleanLit([0m[34mfalse[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mz[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33mx[0m[36m)[0m
-│                    ├─[34mLor[0m
-│                    └─[36mBinOp[0m
-│                      ├─[36mBinOp[0m
-│                      │ ├─[36mIntLit([0m1[36m)[0m
-│                      │ ├─[34mDiv[0m
-│                      │ └─[36mIntLit([0m0[36m)[0m
-│                      ├─[34mEq[0m
-│                      └─[36mIntLit([0m0[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: BooleanLit(true)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: y
+│            ├─Type: 
+│            └─Body: BooleanLit(false)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: z
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(x)
+│                    ├─Lor
+│                    └─BinOp
+│                      ├─BinOp
+│                      │ ├─IntLit(1)
+│                      │ ├─Div
+│                      │ └─IntLit(0)
+│                      ├─Eq
+│                      └─IntLit(0)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -849,7 +983,6 @@ end6:
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -858,22 +991,22 @@ Test #11: assignment-06-passing-tests/test11.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test11.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m5[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mneg_x[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mUnOp[0m
-│                    ├─[34mNeg[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mx[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mLval[0m
-                └─[36mVar([0m[33mneg_x[0m[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(5)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: neg_x
+│            ├─Type: 
+│            └─Body: UnOp
+│                    ├─Neg
+│                    └─Lval
+│                      └─Var(x)
+└─ReturnValStm: Lval
+                └─Var(neg_x)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -891,7 +1024,6 @@ define i64 @dolphin_main () {
  ret i64 %neg_x_val5
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -900,28 +1032,28 @@ Test #12: assignment-06-passing-tests/test12.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test12.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33ma[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mb[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m20[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mis_equal[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mEq[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: a
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: b
+│            ├─Type: 
+│            └─Body: IntLit(20)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: is_equal
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─Eq
+│                    └─Lval
+│                      └─Var(b)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -941,7 +1073,6 @@ define i64 @dolphin_main () {
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -950,20 +1081,20 @@ Test #13: assignment-06-passing-tests/test13.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test13.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mCall[0m
-│                    ├─[36mFunName: [0m[33mread_integer[0m
-│                    └─[36mArgs[0m
-├─[36mExprStm: [0m[36mCall[0m
-│          ├─[36mFunName: [0m[33mprint_integer[0m
-│          └─[36mArgs[0m
-│            └─[36mLval[0m
-│              └─[36mVar([0m[33mx[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: Call
+│                    ├─FunName: read_integer
+│                    └─Args
+├─ExprStm: Call
+│          ├─FunName: print_integer
+│          └─Args
+│            └─Lval
+│              └─Var(x)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -979,7 +1110,6 @@ define i64 @dolphin_main () {
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -988,34 +1118,34 @@ Test #14: assignment-06-passing-tests/test14.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test14.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mx[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m15[36m)[0m
-├─[34mIfStm[0m
-│ ├─[36mCond: [0m[36mBinOp[0m
-│ │       ├─[36mLval[0m
-│ │       │ └─[36mVar([0m[33mx[0m[36m)[0m
-│ │       ├─[34mGt[0m
-│ │       └─[36mIntLit([0m10[36m)[0m
-│ └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│                └─[36mCompoundStm[0m
-│                  └─[34mIfStm[0m
-│                    ├─[36mCond: [0m[36mBinOp[0m
-│                    │       ├─[36mLval[0m
-│                    │       │ └─[36mVar([0m[33mx[0m[36m)[0m
-│                    │       ├─[34mLt[0m
-│                    │       └─[36mIntLit([0m20[36m)[0m
-│                    └─[36mThen-Branch: [0m[36mCompoundStm[0m
-│                                   └─[36mCompoundStm[0m
-│                                     └─[36mExprStm: [0m[36mCall[0m
-│                                                ├─[36mFunName: [0m[33mprint_integer[0m
-│                                                └─[36mArgs[0m
-│                                                  └─[36mLval[0m
-│                                                    └─[36mVar([0m[33mx[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: x
+│            ├─Type: 
+│            └─Body: IntLit(15)
+├─IfStm
+│ ├─Cond: BinOp
+│ │       ├─Lval
+│ │       │ └─Var(x)
+│ │       ├─Gt
+│ │       └─IntLit(10)
+│ └─Then-Branch: CompoundStm
+│                └─CompoundStm
+│                  └─IfStm
+│                    ├─Cond: BinOp
+│                    │       ├─Lval
+│                    │       │ └─Var(x)
+│                    │       ├─Lt
+│                    │       └─IntLit(20)
+│                    └─Then-Branch: CompoundStm
+│                                   └─CompoundStm
+│                                     └─ExprStm: Call
+│                                                ├─FunName: print_integer
+│                                                └─Args
+│                                                  └─Lval
+│                                                    └─Var(x)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -1046,7 +1176,6 @@ if_end6:
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 ---------------------------------------
@@ -1055,68 +1184,68 @@ Test #15: assignment-06-passing-tests/test15.dlp
 Running compiler: ./_build/default/driver.exe assignment-06-passing-tests/test15.dlp
 Parsing successful!
 AST:
-[36mProgram[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33ma[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m10[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mb[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mIntLit([0m3[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33msum[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mPLUS[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mdiff[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mMinus[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mprod[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mMul[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mquot[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mDiv[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-├─DeclStm: [34mVarDecl[0m
-│          └─[34mDeclaration[0m
-│            ├─[36mIdent: [0m[33mrem[0m
-│            ├─[36mType: [0m
-│            └─[36mBody: [0m[36mBinOp[0m
-│                    ├─[36mLval[0m
-│                    │ └─[36mVar([0m[33ma[0m[36m)[0m
-│                    ├─[34mRem[0m
-│                    └─[36mLval[0m
-│                      └─[36mVar([0m[33mb[0m[36m)[0m
-└─[34mReturnValStm: [0m[36mIntLit([0m0[36m)[0m
+Program
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: a
+│            ├─Type: 
+│            └─Body: IntLit(10)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: b
+│            ├─Type: 
+│            └─Body: IntLit(3)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: sum
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─PLUS
+│                    └─Lval
+│                      └─Var(b)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: diff
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─Minus
+│                    └─Lval
+│                      └─Var(b)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: prod
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─Mul
+│                    └─Lval
+│                      └─Var(b)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: quot
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─Div
+│                    └─Lval
+│                      └─Var(b)
+├─DeclStm: VarDecl
+│          └─Declaration
+│            ├─Ident: rem
+│            ├─Type: 
+│            └─Body: BinOp
+│                    ├─Lval
+│                    │ └─Var(a)
+│                    ├─Rem
+│                    └─Lval
+│                      └─Var(b)
+└─ReturnValStm: IntLit(0)
 Semantic analysis successful!
 Code generation successful!
 Generated Code:
@@ -1156,7 +1285,6 @@ define i64 @dolphin_main () {
  ret i64 0
 }
 
-Compilation successful!
 TEST PASSED
 
 =======================================

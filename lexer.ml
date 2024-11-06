@@ -6,6 +6,7 @@
   open Ast           (* Access to AST definitions *)
   open Location      (* Access to Location module for tracking positions *)
   open PrintBox
+  open Errors
 
   (* Initialize a keyword table to differentiate between keywords and identifiers *)
   let keyword_table = Hashtbl.create 20
@@ -40,7 +41,7 @@
     let endp = Lexing.lexeme_end_p lexbuf in
     Location.make_location (startp, endp)
 
-# 44 "lexer.ml"
+# 45 "lexer.ml"
 let __ocaml_lex_tables = {
   Lexing.lex_base =
    "\000\000\221\255\222\255\078\000\088\000\001\000\226\255\227\255\
@@ -205,192 +206,192 @@ let rec tokenize lexbuf =
 and __ocaml_lex_tokenize_rec lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 56 "lexer.mll"
+# 57 "lexer.mll"
                ( tokenize lexbuf )
-# 211 "lexer.ml"
+# 212 "lexer.ml"
 
   | 1 ->
-# 59 "lexer.mll"
+# 60 "lexer.mll"
             ( Lexing.new_line lexbuf; tokenize lexbuf )
-# 216 "lexer.ml"
+# 217 "lexer.ml"
 
   | 2 ->
-# 62 "lexer.mll"
+# 63 "lexer.mll"
                                          ( 
       Lexing.new_line lexbuf; 
       tokenize lexbuf 
     )
-# 224 "lexer.ml"
+# 225 "lexer.ml"
 
   | 3 ->
-# 68 "lexer.mll"
+# 69 "lexer.mll"
          ( comment 1 lexbuf )
-# 229 "lexer.ml"
+# 230 "lexer.ml"
 
   | 4 ->
-# 71 "lexer.mll"
+# 72 "lexer.mll"
          ( LOR )
-# 234 "lexer.ml"
+# 235 "lexer.ml"
 
   | 5 ->
-# 72 "lexer.mll"
+# 73 "lexer.mll"
          ( LAND )
-# 239 "lexer.ml"
+# 240 "lexer.ml"
 
   | 6 ->
-# 73 "lexer.mll"
+# 74 "lexer.mll"
          ( EQ )
-# 244 "lexer.ml"
+# 245 "lexer.ml"
 
   | 7 ->
-# 74 "lexer.mll"
+# 75 "lexer.mll"
          ( NEQ )
-# 249 "lexer.ml"
+# 250 "lexer.ml"
 
   | 8 ->
-# 75 "lexer.mll"
+# 76 "lexer.mll"
          ( LE )
-# 254 "lexer.ml"
+# 255 "lexer.ml"
 
   | 9 ->
-# 76 "lexer.mll"
+# 77 "lexer.mll"
          ( GE )
-# 259 "lexer.ml"
+# 260 "lexer.ml"
 
   | 10 ->
-# 79 "lexer.mll"
+# 80 "lexer.mll"
         ( PLUS )
-# 264 "lexer.ml"
+# 265 "lexer.ml"
 
   | 11 ->
-# 80 "lexer.mll"
+# 81 "lexer.mll"
         ( MINUS )
-# 269 "lexer.ml"
+# 270 "lexer.ml"
 
   | 12 ->
-# 81 "lexer.mll"
+# 82 "lexer.mll"
         ( MUL )
-# 274 "lexer.ml"
+# 275 "lexer.ml"
 
   | 13 ->
-# 82 "lexer.mll"
+# 83 "lexer.mll"
         ( DIV )
-# 279 "lexer.ml"
+# 280 "lexer.ml"
 
   | 14 ->
-# 83 "lexer.mll"
+# 84 "lexer.mll"
         ( REM )
-# 284 "lexer.ml"
+# 285 "lexer.ml"
 
   | 15 ->
-# 84 "lexer.mll"
+# 85 "lexer.mll"
         ( LT )
-# 289 "lexer.ml"
+# 290 "lexer.ml"
 
   | 16 ->
-# 85 "lexer.mll"
+# 86 "lexer.mll"
         ( GT )
-# 294 "lexer.ml"
+# 295 "lexer.ml"
 
   | 17 ->
-# 86 "lexer.mll"
+# 87 "lexer.mll"
         ( LNOT )
-# 299 "lexer.ml"
+# 300 "lexer.ml"
 
   | 18 ->
-# 87 "lexer.mll"
+# 88 "lexer.mll"
         ( ASSIGN )
-# 304 "lexer.ml"
+# 305 "lexer.ml"
 
   | 19 ->
-# 88 "lexer.mll"
+# 89 "lexer.mll"
         ( QUESTIONMARK )
-# 309 "lexer.ml"
+# 310 "lexer.ml"
 
   | 20 ->
-# 89 "lexer.mll"
+# 90 "lexer.mll"
         ( COLON )
-# 314 "lexer.ml"
+# 315 "lexer.ml"
 
   | 21 ->
-# 90 "lexer.mll"
+# 91 "lexer.mll"
         ( COMMA )
-# 319 "lexer.ml"
+# 320 "lexer.ml"
 
   | 22 ->
-# 91 "lexer.mll"
+# 92 "lexer.mll"
         ( SEMICOLON )
-# 324 "lexer.ml"
+# 325 "lexer.ml"
 
   | 23 ->
-# 92 "lexer.mll"
+# 93 "lexer.mll"
         ( DOT )
-# 329 "lexer.ml"
+# 330 "lexer.ml"
 
   | 24 ->
-# 93 "lexer.mll"
+# 94 "lexer.mll"
         ( LBRACKET )
-# 334 "lexer.ml"
+# 335 "lexer.ml"
 
   | 25 ->
-# 94 "lexer.mll"
+# 95 "lexer.mll"
         ( RBRACKET )
-# 339 "lexer.ml"
+# 340 "lexer.ml"
 
   | 26 ->
-# 95 "lexer.mll"
+# 96 "lexer.mll"
         ( LBRACE )
-# 344 "lexer.ml"
+# 345 "lexer.ml"
 
   | 27 ->
-# 96 "lexer.mll"
+# 97 "lexer.mll"
         ( RBRACE )
-# 349 "lexer.ml"
+# 350 "lexer.ml"
 
   | 28 ->
-# 97 "lexer.mll"
+# 98 "lexer.mll"
         ( LPAREN )
-# 354 "lexer.ml"
+# 355 "lexer.ml"
 
   | 29 ->
-# 98 "lexer.mll"
+# 99 "lexer.mll"
         ( RPAREN )
-# 359 "lexer.ml"
+# 360 "lexer.ml"
 
   | 30 ->
 let
-# 101 "lexer.mll"
+# 102 "lexer.mll"
                   s
-# 365 "lexer.ml"
+# 366 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 101 "lexer.mll"
+# 102 "lexer.mll"
                     ( 
       STRING_LIT (String.sub s 1 (String.length s - 2))  (* Remove the surrounding quotes *)
     )
-# 371 "lexer.ml"
+# 372 "lexer.ml"
 
   | 31 ->
 let
-# 106 "lexer.mll"
+# 107 "lexer.mll"
              id
-# 377 "lexer.ml"
+# 378 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 106 "lexer.mll"
+# 107 "lexer.mll"
                 ( 
       try 
         Hashtbl.find keyword_table id 
       with 
         Not_found -> IDENT id 
     )
-# 386 "lexer.ml"
+# 387 "lexer.ml"
 
   | 32 ->
 let
-# 114 "lexer.mll"
+# 115 "lexer.mll"
                num
-# 392 "lexer.ml"
+# 393 "lexer.ml"
 = Lexing.sub_lexeme lexbuf lexbuf.Lexing.lex_start_pos lexbuf.Lexing.lex_curr_pos in
-# 114 "lexer.mll"
+# 115 "lexer.mll"
                    (
     try
       INT_LIT (Int64.of_string num)
@@ -398,32 +399,28 @@ let
       Failure _ ->
         let loc = make_location lexbuf in
         (* Print the location tree to stdout *)
-        PrintBox_text.output stdout (Location.location_to_tree loc);
-        (* Raise the exception with the message *)
-        failwith ("Integer literal out of bounds: " ^ num);
+        raise (Errors.LexError ("Invalid integer literal", loc))
   )
-# 406 "lexer.ml"
+# 405 "lexer.ml"
 
   | 33 ->
-# 126 "lexer.mll"
+# 125 "lexer.mll"
         ( EOF )
-# 411 "lexer.ml"
+# 410 "lexer.ml"
 
   | 34 ->
 let
-# 129 "lexer.mll"
+# 128 "lexer.mll"
                c
-# 417 "lexer.ml"
+# 416 "lexer.ml"
 = Lexing.sub_lexeme_char lexbuf lexbuf.Lexing.lex_start_pos in
-# 129 "lexer.mll"
+# 128 "lexer.mll"
                  (
     let loc = make_location lexbuf in
     (* Print the location tree to stdout *)
-    PrintBox_text.output stdout (Location.location_to_tree loc);
-    (* Raise the exception with the message *)
-    failwith ("Unexpected character '" ^ String.escaped (String.make 1 c) ^ "'");
+    raise (Errors.LexError("Unexpected character: " ^ Char.escaped c, loc))
 )
-# 427 "lexer.ml"
+# 424 "lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_tokenize_rec lexbuf __ocaml_lex_state
@@ -433,45 +430,43 @@ and comment depth lexbuf =
 and __ocaml_lex_comment_rec depth lexbuf __ocaml_lex_state =
   match Lexing.engine __ocaml_lex_tables __ocaml_lex_state lexbuf with
       | 0 ->
-# 139 "lexer.mll"
+# 136 "lexer.mll"
          ( comment (depth + 1) lexbuf )
-# 439 "lexer.ml"
+# 436 "lexer.ml"
 
   | 1 ->
-# 142 "lexer.mll"
+# 139 "lexer.mll"
          ( 
       if depth = 1 then 
         tokenize lexbuf  (* Exit the comment mode *)
       else 
         comment (depth - 1) lexbuf  (* Handle nested comment *)
     )
-# 449 "lexer.ml"
+# 446 "lexer.ml"
 
   | 2 ->
-# 150 "lexer.mll"
+# 147 "lexer.mll"
             ( 
       Lexing.new_line lexbuf; 
       comment depth lexbuf 
     )
-# 457 "lexer.ml"
+# 454 "lexer.ml"
 
   | 3 ->
-# 156 "lexer.mll"
+# 153 "lexer.mll"
             ( 
       comment depth lexbuf 
     )
-# 464 "lexer.ml"
+# 461 "lexer.ml"
 
   | 4 ->
-# 161 "lexer.mll"
+# 158 "lexer.mll"
         ( 
     let loc = make_location lexbuf in
     (* Print the location tree to stdout *)
-    PrintBox_text.output stdout (Location.location_to_tree loc);
-    (* Raise the exception with the message *)
-    failwith "Unterminated comment";
+    raise (Errors.LexError("Unexpected end of file within a comment", loc))
 )
-# 475 "lexer.ml"
+# 470 "lexer.ml"
 
   | __ocaml_lex_state -> lexbuf.Lexing.refill_buff lexbuf;
       __ocaml_lex_comment_rec depth lexbuf __ocaml_lex_state

@@ -1,0 +1,4 @@
+// test10.dlp
+var x = 10;
+x = true;
+return x;

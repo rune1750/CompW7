@@ -1,1 +1,1 @@
-lexer.ml: Ast Hashtbl Int64 Lexing List Location Parser PrintBox PrintBox_text String
+lexer.ml: Ast Char Errors Hashtbl Int64 Lexing List Location Parser PrintBox String

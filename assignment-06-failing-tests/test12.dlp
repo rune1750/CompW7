@@ -1,0 +1,3 @@
+// test10.dlp
+var x = print_integer(5);
+return 0;

@@ -20,7 +20,7 @@ echo "Removing existing generated files..."
 rm -f parser.ml parser.mli lexer.ml test_output.txt
 
 LOG_FILE="test_output.txt"
-exec > "$LOG_FILE" 2>&1
+exec > >(tee >(sed 's/\x1b[[0-9;]*m//g' > "$LOG_FILE")) 2>&1
 
 # Generate lexer.ml using ocamllex
 echo "Generating lexer.ml using ocamllex..."
@@ -62,7 +62,7 @@ for TEST_FILE in "$TEST_DIR"/*.dlp; do
 
     # Check the exit code of the compiler
     EXIT_CODE=$?
-    if [ $EXIT_CODE -eq 1 ]; then
+    if [ $EXIT_CODE -ne 0 ]; then
         echo "Test PASSED: Compiler reported an error as expected."
         let "PASSED_TESTS+=1"
     else

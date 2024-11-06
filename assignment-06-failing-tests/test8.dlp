@@ -1,5 +1,0 @@
-// test8.dlp
-var x = 10;
-else {
-    x = 20;
-}

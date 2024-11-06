@@ -37,7 +37,7 @@ let compile_prog filename =
           (Location.string_of_position pos);
         close_in inch;
         exit 1
-    | LexError (msg, loc) ->
+    | Errors.LexError (msg, loc) ->
         eprintf "Lexical error at %s: %s\n"
           (Location.string_of_location loc)
           msg;
@@ -81,13 +81,4 @@ module Location = struct
 end
 
 let () =
-  if Array.length Sys.argv <> 2 then
-    eprintf "Usage: %s <filename>\n" Sys.argv.(0)
-  else
-    try
-      compile_prog Sys.argv.(1);
-      printf "Compilation successful!\n";
-      exit 0
-    with e -> 
-      eprintf "An error occurred: %s\n" (Printexc.to_string e);
-      exit 1
+  compile_prog Sys.argv.(1);
