@@ -1,5 +1,0 @@
-// test10.dlp
-var x = 10;
-var y = true;
-x = x + y;
-return 0;

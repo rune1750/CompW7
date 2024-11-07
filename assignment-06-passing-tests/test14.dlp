@@ -1,8 +1,0 @@
-// test1.dlp
-var x = 15;
-if (x > 10) {
-    if (x < 20) {
-        print_integer(x);
-    }
-}
-return 0;

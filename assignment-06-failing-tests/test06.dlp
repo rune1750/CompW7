@@ -1,3 +1,0 @@
-// test6.dlp
-var x = 10  // Missing semicolon here
-var y = 20;

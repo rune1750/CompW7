@@ -1,4 +1,0 @@
-// test10.dlp
-for (var i = 0; i < 10 i++) {  // Missing semicolon between condition and update
-    print_integer(i);
-}

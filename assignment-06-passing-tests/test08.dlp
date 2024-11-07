@@ -1,8 +1,0 @@
-// test1.dlp
-var x = 10;
-if (x < 20) {
-    x = x + 7;
-} else {
-    x = x - 5;
-}
-return x;

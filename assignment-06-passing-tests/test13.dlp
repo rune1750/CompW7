@@ -1,4 +1,0 @@
-// test1.dlp
-var x = read_integer();
-print_integer(x);
-return 0;

@@ -45,6 +45,10 @@
 %type <Ast.expr> call
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
+(*New rules for W7*)
+%type <Ast.single_declaration> function_decl
+%type <Ast.param list> param_list
+%type <Ast.param> param
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -250,6 +254,8 @@ expr:
       { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
+  | expr COMMA expr
+        {}
 
 lval:
     IDENT
@@ -276,3 +282,43 @@ arg_list:
       { $1 :: $3 }
   | /* empty */
       { [] }
+
+(*New rules for W7*)
+program:
+    functions_and_statements EOF { { functions = fst $1; main_body = snd $1 } }
+
+functions_and_statements:
+    function_decl functions_and_statements
+      { ($1 :: fst $2, snd $2) }
+  | statement functions_and_statements
+      { (fst $2, $1 :: snd $2) }
+  | /* empty */
+      { ([], []) }
+
+function_decl:
+    IDENT LPAREN param_list RPAREN COLON type_expr LBRACE statements RBRACE
+      { 
+        Function { 
+          fname = Ident { name = $1; loc = mk_loc $startpos $endpos };
+          funtype = FunTyp { ret = $6; params = $3 };
+          body = $8;
+          loc = mk_loc $startpos $endpos 
+        } 
+      }
+
+param_list:
+    param COMMA param_list
+      { $1 :: $3 }
+  | param
+      { [$1] }
+  | /* empty */
+      { [] }
+
+param:
+    IDENT COLON type_expr
+      { 
+        Param { 
+          paramname = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
+          typ = $3 
+        } 
+      }
