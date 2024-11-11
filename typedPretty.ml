@@ -46,10 +46,9 @@ let rec expr_to_tree e =
   | Boolean {bool; _} -> PBox.hlist ~bars:false [Pretty.make_info_node_line "BooleanLit("; Pretty.make_keyword_line (if bool then "true" else "false"); Pretty.make_info_node_line ")"]
   | BinOp {left; op; right; tp; _} -> PBox.tree (Pretty.make_info_node_line "BinOp") [typ_to_tree tp; expr_to_tree left; binop_to_tree op; expr_to_tree right]
   | UnOp {op; operand; tp; _} -> PBox.tree (Pretty.make_info_node_line "UnOp") [typ_to_tree tp; unop_to_tree op; expr_to_tree operand]
-  | CommaExpr {exprs; tp} -> 
-    PBox.tree (Pretty.make_info_node_line "CommaExpr") 
-      [typ_to_tree tp; 
-       PBox.hlist ~bars:false (List.map expr_to_tree exprs)]  (* Recursively print the comma-expressions *)
+  | CommaExpr {left; right; tp} ->
+    PBox.tree (make_info_node_line ("CommaExpr : " ^ typ_to_string tp))
+      [expr_to_tree left; expr_to_tree right]
   | Lval l -> PBox.tree (Pretty.make_info_node_line "Lval") [lval_to_tree l]
   | Assignment {lvl; rhs; tp; _} -> PBox.tree (Pretty.make_info_node_line "Assignment") [typ_to_tree tp; lval_to_tree lvl; expr_to_tree rhs]
   | Call {fname; args; tp; _} ->

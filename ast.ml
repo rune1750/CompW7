@@ -36,7 +36,7 @@ type expr =
 | Lval of lval
 | Assignment of {lvl : lval; rhs : expr; loc : Loc.location}
 | Call of {fname : ident; args : expr list; loc : Loc.location}
-| CommaExpr of {exprs : expr list; loc : Loc.location}
+| CommaExpr of { left: expr; right: expr; tp: typ }
 and lval =
 | Var of ident
 

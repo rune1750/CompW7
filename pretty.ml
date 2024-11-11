@@ -57,8 +57,9 @@ let rec expr_to_tree e =
       PBox.tree (make_info_node_line "Call")
         [PBox.hlist ~bars:false [make_info_node_line "FunName: "; ident_to_tree fname];
          PBox.tree (make_info_node_line "Args") (List.map expr_to_tree args)]
-  | CommaExpr {exprs; _} ->
-      PBox.tree (make_info_node_line "CommaExpr") (List.map expr_to_tree exprs)
+  | CommaExpr {left; right; _} ->
+      PBox.tree (make_info_node_line "CommaExpr")
+        [expr_to_tree left; expr_to_tree right]
 
 and lval_to_tree l =
   match l with

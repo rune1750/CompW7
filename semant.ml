@@ -174,18 +174,18 @@ let rec infertype_expr env (expr: Ast.expr) =
         raise (TypeError (TypeMismatch { expected = tplvl; actual = tprhs; loc = loc }));
       (TAst.Assignment { lvl = tlvl; rhs = trhs; tp = tplvl }, tplvl)
 
-  | CommaExpr { exprs; loc } ->
-    (* Validate context specifically for CommaExpr *)
-    validate_expr_context env expr loc;
-
-    (* Process comma-separated expressions *)
-    let typed_exprs = List.map (fun e -> fst (infertype_expr env e)) exprs in
-    match List.rev exprs with
-    | last :: _ -> 
-        let _, last_type = infertype_expr env last in
-        (TAst.CommaExpr { exprs = typed_exprs; tp = last_type }, last_type)
-    | [] -> 
-        raise (TypeError (InvalidExpression { msg = "Empty comma expression"; loc = loc }))
+      | CommaExpr { left; right; loc } ->
+        (* Validate context specifically for CommaExpr *)
+        validate_expr_context env expr loc;
+    
+        (* Process the left expression *)
+        let tleft_expr, _ = infertype_expr env left in
+    
+        (* Process the right expression *)
+        let tright_expr, right_type = infertype_expr env right in
+    
+        (* The type of the comma expression is the type of the right expression *)
+        (TAst.CommaExpr { left = tleft_expr; right = tright_expr; tp = right_type }, right_type)
 
 and infertype_lval env = function
   | Var id ->

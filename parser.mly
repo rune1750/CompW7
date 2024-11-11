@@ -59,6 +59,7 @@
 %left LAND
 %left PLUS MINUS
 %left MUL DIV REM
+%left ','
 %right UMINUS LNOT
 
 %%
@@ -257,8 +258,7 @@ expr:
       { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
-  | expr COMMA expr
-      { CommaExpr { exprs = [$1; $3]; loc = mk_loc $startpos $endpos } }
+  | expr ',' expr { CommaExpr { left = $1; right = $3; loc = mk_loc $startpos $endpos } }
 
 assignment:
     lval ASSIGN expr

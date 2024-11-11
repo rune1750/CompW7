@@ -27,7 +27,7 @@ type expr =
   | Lval of lval
   | Assignment of { lvl : lval; rhs : expr; tp : typ }
   | Call of { fname : ident; args : expr list; tp : typ }
-  | CommaExpr of { exprs : expr list; tp : typ }  (* Retained CommaExpr for sequencing *)
+  | CommaExpr of { left: expr; right: expr; tp: typ }
 and lval =
   | Var of { ident : ident; tp : typ }
 

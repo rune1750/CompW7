@@ -81,19 +81,34 @@ let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.e
   | TypedAst.Integer {int} ->
       let operand = Ll.IConst64 int in
       (operand, cfg)
+
   | TypedAst.Boolean {bool} ->
       let operand = Ll.BConst bool in
       (operand, cfg)
+
   | TypedAst.Lval lval ->
       codegen_lval env cfg lval
+
   | TypedAst.BinOp {left; op; right; tp} ->
       codegen_binop env cfg left op right tp
+
   | TypedAst.UnOp {op; operand; tp} ->
       codegen_unop env cfg op operand tp
+
   | TypedAst.Assignment {lvl; rhs; tp} ->
       codegen_assignment env cfg lvl rhs tp
+
   | TypedAst.Call {fname; args; tp} ->
       codegen_call env cfg fname args tp
+
+  | TypedAst.CommaExpr {left; right; tp} ->
+      (* Generate code for the left expression *)
+      let (_, cfg) = codegen_expr env cfg left in
+      (* Discard the result of the left expression *)
+
+      (* Generate code for the right expression *)
+      codegen_expr env cfg right
+      (* The result of the comma expression is the result of the right expression *)
 
 and codegen_lval (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * Cfg.cfg_builder) =
   match lval with
