@@ -4,6 +4,7 @@ open Env
 open Errors
 open Symbol
 open Location
+open Printf
 
 exception TypeError of error
 
@@ -130,7 +131,6 @@ let rec infertype_expr env (expr: Ast.expr) =
     begin match lookup_fun env name with
     | Some (Ast.Function { f_name; return_type; params; _ }) ->  
         (* Manually convert Ast.Function to a TypedAst.Function here *)
-
         (* Convert function return type and parameters *)
         let ret = convert_type return_type in
         let tparams = List.map (fun (Ast.Parameter { name; tp; _ }) ->
@@ -158,6 +158,7 @@ let rec infertype_expr env (expr: Ast.expr) =
         
         (* Return the correctly typed function call *)
         (TypedAst.Call { fname = TypedAst.Ident { sym = Symbol.symbol name }; args = targs; tp = ret }, ret)
+        
     | None -> 
         raise (TypeError (UndefinedFunction { name = name; loc = loc }))
     end
@@ -174,18 +175,18 @@ let rec infertype_expr env (expr: Ast.expr) =
         raise (TypeError (TypeMismatch { expected = tplvl; actual = tprhs; loc = loc }));
       (TAst.Assignment { lvl = tlvl; rhs = trhs; tp = tplvl }, tplvl)
 
-      | CommaExpr { left; right; loc } ->
-        (* Validate context specifically for CommaExpr *)
-        validate_expr_context env expr loc;
-    
-        (* Process the left expression *)
-        let tleft_expr, _ = infertype_expr env left in
-    
-        (* Process the right expression *)
-        let tright_expr, right_type = infertype_expr env right in
-    
-        (* The type of the comma expression is the type of the right expression *)
-        (TAst.CommaExpr { left = tleft_expr; right = tright_expr; tp = right_type }, right_type)
+  | CommaExpr { left; right; loc } ->
+    (* Validate context specifically for CommaExpr *)
+    validate_expr_context env expr loc;
+
+    (* Process the left expression *)
+    let tleft_expr, _ = infertype_expr env left in
+
+    (* Process the right expression *)
+    let tright_expr, right_type = infertype_expr env right in
+
+    (* The type of the comma expression is the type of the right expression *)
+    (TAst.CommaExpr { left = tleft_expr; right = tright_expr; tp = right_type }, right_type)
 
 and infertype_lval env = function
   | Var id ->
@@ -380,16 +381,18 @@ let typecheck_function_body env (Ast.Function { f_name; return_type; params; bod
   ) env params in
   
   (* Type check the function body *)
-  let typed_body = List.map (fun stmt ->
-    let typed_stmt, _ = typecheck_statement env_with_params stmt in
-    typed_stmt
-  ) body in
+  let final_env, typed_body = List.fold_left (fun (env, acc) stmt ->
+    let typed_stmt, new_env = typecheck_statement env stmt in
+    (new_env, typed_stmt :: acc)
+  ) (env_with_params, []) body in
   
+  let () = Env.print_variables final_env in
+
   (* Verify return type matches all return statements *)
   let verify_returns ret_type stmt =
     match stmt with
     | Ast.ReturnStm { ret; _ } ->  (* Use TypedAst instead of Ast *)
-        let _, ret_tp = infertype_expr env_with_params ret in
+        let _, ret_tp = infertype_expr final_env ret in
         if ret_tp <> ret_type then
           raise (TypeError (ReturnTypeMismatch { 
             expected = ret_type; 
@@ -409,7 +412,7 @@ let typecheck_function_body env (Ast.Function { f_name; return_type; params; bod
         typ = convert_type p.tp;
       }
     ) params;
-    body = typed_body;
+    body = (List.rev typed_body);
   }
 
   let typecheck_prog (prog: Ast.program) : TypedAst.program =

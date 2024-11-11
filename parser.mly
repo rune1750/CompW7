@@ -59,7 +59,7 @@
 %left LAND
 %left PLUS MINUS
 %left MUL DIV REM
-%left ','
+%left COMMA
 %right UMINUS LNOT
 
 %%
@@ -213,6 +213,19 @@ compound_stmt:
     LBRACE statements RBRACE
       { CompoundStm { stms = $2; loc = mk_loc $startpos $endpos } }
 
+call:
+    IDENT LPAREN arg_list RPAREN
+      { Call { fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; args = $3; loc = mk_loc $startpos $endpos } }
+
+arg_list:
+    /* empty */
+      { [] }
+  | expr
+      { [$1] }
+  | expr COMMA arg_list
+      { $1 :: $3 }
+
+
 expr:
     expr PLUS expr
       { BinOp { left = $1; op = Plus { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
@@ -258,7 +271,8 @@ expr:
       { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
-  | expr ',' expr { CommaExpr { left = $1; right = $3; loc = mk_loc $startpos $endpos } }
+      
+  | expr COMMA expr { CommaExpr { left = $1; right = $3; loc = mk_loc $startpos $endpos } }
 
 assignment:
     lval ASSIGN expr
@@ -268,17 +282,6 @@ lval:
     IDENT
       { Var (Ident { name = $1; loc = mk_loc $startpos $endpos }) }
 
-call:
-    IDENT LPAREN arg_list RPAREN
-      { Call { fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; args = $3; loc = mk_loc $startpos $endpos } }
-
-arg_list:
-    /* empty */
-      { [] }
-  | expr
-      { [$1] }
-  | expr COMMA arg_list
-      { $1 :: $3 }
 
 functions:
   function_decl { [$1] }

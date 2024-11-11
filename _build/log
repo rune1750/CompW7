@@ -1,0 +1,17 @@
+# dune exec ./driver.exe
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /root/.cache/dune/db
+# Workspace root:
+# /workspaces/86de50d4f7767e51c9a90f9f5da18e64f5ccde5b79d5be5644c2a88c7d746cf2
+# Auto-detected concurrency: 12
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /root/.opam/5.2.0/bin/ocamlc.opt -config > /tmp/dune_4e7c4e_output

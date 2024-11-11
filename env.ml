@@ -1,6 +1,7 @@
 module Loc = Location
 module TAst = TypedAst
 open Ast
+open Printf
 
 type expr_context = 
   | NormalContext
@@ -47,3 +48,9 @@ let lookup_var env name =
 let lookup_fun env name =
   try Some (List.assoc name env.functions) with
   | Not_found -> None
+
+  let print_variables env =
+    Printf.printf "Variables in environment:\n";
+    List.iter (fun (name, typ) ->
+      Printf.printf "  %s \n" name 
+    ) env.variables
