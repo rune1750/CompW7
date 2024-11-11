@@ -16,6 +16,11 @@ type error =
   | MissingReturn of {loc : Loc.location}
   | ArityMismatch of {expected : int; actual : int; loc : Loc.location}
   | InvalidBreakContinue of {msg : string; loc : Loc.location}
+  | DuplicateFunction of {name : string; loc : Loc.location}  (* New error type *)
+  | ReturnTypeMismatch of {expected : TAst.typ; actual : TAst.typ; loc : Loc.location}  (* New error type *)
+  | InvalidCommaExpression of {msg : string; loc : Loc.location}  (* New error type *)
+  | InvalidMainFunction of {msg : string}  (* New error type *)
+  | MissingMainFunction of {msg : string}  (* New error type *)
 
 (* Define custom exceptions *)
 exception LexError of string * Loc.location
@@ -46,3 +51,17 @@ let error_to_string err =
         (Loc.string_of_location loc) expected actual
   | InvalidBreakContinue {msg; loc} ->
       Printf.sprintf "Invalid break/continue at %s: %s" (Loc.string_of_location loc) msg
+  | DuplicateFunction {name; loc} ->
+      Printf.sprintf "Duplicate function '%s' at %s" name (Loc.string_of_location loc)
+  | ReturnTypeMismatch {expected; actual; loc} -> 
+        let msg = Printf.sprintf "Return type mismatch at %s: expected %s but found %s"
+            (Loc.string_of_location loc)
+            (TPretty.typ_to_string expected)
+            (TPretty.typ_to_string actual) in
+        msg
+  | InvalidCommaExpression {msg; loc} ->
+        Printf.sprintf "Invalid comma expression at %s: %s" (Loc.string_of_location loc) msg
+  | InvalidMainFunction {msg} ->
+        Printf.sprintf "Invalid main function at %s"  msg
+  | MissingMainFunction {msg} -> 
+        Printf.sprintf "Missing main function%s" msg

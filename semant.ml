@@ -3,17 +3,30 @@ open TypedAst
 open Env
 open Errors
 open Symbol
+open Location
 
 exception TypeError of error
 
-let library_functions : (string * funtype) list = [
-  (* print_int: takes an int, returns unit *)
-  ("print_integer", FunTyp { ret = Void; params = [Param {paramname = Ident {sym = symbol "int"} ; typ = TypedAst.Int}] });
+let library_functions : Ast.function_decl list = [
+  (* print_integer: takes an int, returns void *)
+  Function {
+    f_name = Ident {name = "print_integer"; loc = dummy_loc}; 
+    return_type = Void {loc = dummy_loc}; 
+    params = [Parameter {name = Ident {name = "x"; loc = dummy_loc}; tp = Int {loc = dummy_loc}; loc = dummy_loc}]; 
+    body = []; 
+    loc = dummy_loc
+  };
 
-  (* read_int: takes no parameters, returns int *)
-  ("read_integer", FunTyp { ret = Int; params = [] });
+  (* read_integer: takes no parameters, returns int *)
+  Function {
+    f_name = Ident {name = "read_integer"; loc = dummy_loc}; 
+    return_type = Int {loc = dummy_loc}; 
+    params = []; 
+    body = []; 
+    loc = dummy_loc
+  };
 
-  (* Add more standard library functions as needed *)
+  (* Additional library functions can be added here if needed *)
 ]
 
 let stm_counter = ref 0
@@ -43,10 +56,39 @@ let convert_type tp =
   match tp with
   | Ast.Int _ -> TypedAst.Int
   | Ast.Bool _ -> TypedAst.Bool
+  | Ast.Void _ -> TypedAst.Void
+
+
+let validate_expr_context env (expr : Ast.expr) loc =
+  match expr, env.expr_context with
+  | CommaExpr _, ExprStmtContext ->
+      raise (TypeError (InvalidCommaExpression {
+        msg = "Comma expressions are not allowed as expression statements";
+        loc = loc
+      }))
+  | CommaExpr _, FuncArgContext ->
+      raise (TypeError (InvalidCommaExpression {
+        msg = "Comma expressions cannot appear as function arguments";
+        loc = loc
+      }))
+  | _ -> ()
+
 
 let rec infertype_expr env (expr: Ast.expr) =
+  let loc = match expr with
+    | Integer { loc; _ } -> loc
+    | Boolean { loc; _ } -> loc
+    | BinOp { loc; _ } -> loc
+    | UnOp { loc; _ } -> loc
+    | Lval Var Ident {name; loc} -> loc (* handle Lval case appropriately if it has loc *)
+    | Assignment { loc; _ } -> loc
+    | Call { loc; _ } -> loc
+    | CommaExpr { loc; _ } -> loc
+  in
+  validate_expr_context env expr loc;
+
   match expr with
-  | Integer { int; _ } -> (TAst.Integer { int }, TAst.Int)
+  | Integer { int; _} -> (TAst.Integer { int }, TAst.Int)
   
   | Boolean { bool; _ } -> (TAst.Boolean { bool }, TAst.Bool)
 
@@ -83,26 +125,43 @@ let rec infertype_expr env (expr: Ast.expr) =
       in 
       (TAst.UnOp { op = convert_unop op; operand = toperand; tp = result_type }, result_type)
 
-  | Call { fname; args; loc } ->
-      let Ident { name; _ } = fname in
-      begin match lookup_fun env name with
-      | Some (FunTyp { ret; params }) -> 
-          if List.length args <> List.length params then
+  | Call { fname; args; loc } -> 
+    let Ident { name; _ } = fname in
+    begin match lookup_fun env name with
+    | Some (Ast.Function { f_name; return_type; params; _ }) ->  
+        (* Manually convert Ast.Function to a TypedAst.Function here *)
+
+        (* Convert function return type and parameters *)
+        let ret = convert_type return_type in
+        let tparams = List.map (fun (Ast.Parameter { name; tp; _ }) ->
+          let Ast.Ident { name = param_name; _ } = name in  (* Extract string from Ast.ident *)
+          TypedAst.Param {
+            paramname = TypedAst.Ident { sym = Symbol.symbol param_name };
+            typ = convert_type tp
+          }
+        ) params in
+
+        (* Check argument arity and types, same as before *)
+        if List.length args <> List.length tparams then
             raise (TypeError (ArityMismatch {
-              expected = List.length params;
+              expected = List.length tparams;
               actual = List.length args;
               loc = loc
             }));
-          let targs = List.map2 (fun arg (Param { typ; _ }) -> 
+        
+        let targs = List.map2 (fun arg (TypedAst.Param { typ; _ }) -> 
             let targ, targ_type = infertype_expr env arg in
             if targ_type <> typ then
-              raise (TypeError (TypeMismatch { expected = typ; actual = targ_type; loc = loc }));
+                raise (TypeError (TypeMismatch { expected = typ; actual = targ_type; loc = loc }));
             targ
-          ) args params in
-          (TypedAst.Call { fname = TypedAst.Ident { sym = Symbol.symbol name }; args = targs; tp = ret }, ret)
-      | None -> 
-          raise (TypeError (UndefinedFunction { name; loc = loc }))
-      end
+        ) args tparams in
+        
+        (* Return the correctly typed function call *)
+        (TypedAst.Call { fname = TypedAst.Ident { sym = Symbol.symbol name }; args = targs; tp = ret }, ret)
+    | None -> 
+        raise (TypeError (UndefinedFunction { name = name; loc = loc }))
+    end
+
 
   | Lval lval ->
       let tlval, tp = infertype_lval env lval in
@@ -114,6 +173,19 @@ let rec infertype_expr env (expr: Ast.expr) =
       if tplvl <> tprhs then
         raise (TypeError (TypeMismatch { expected = tplvl; actual = tprhs; loc = loc }));
       (TAst.Assignment { lvl = tlvl; rhs = trhs; tp = tplvl }, tplvl)
+
+  | CommaExpr { exprs; loc } ->
+    (* Validate context specifically for CommaExpr *)
+    validate_expr_context env expr loc;
+
+    (* Process comma-separated expressions *)
+    let typed_exprs = List.map (fun e -> fst (infertype_expr env e)) exprs in
+    match List.rev exprs with
+    | last :: _ -> 
+        let _, last_type = infertype_expr env last in
+        (TAst.CommaExpr { exprs = typed_exprs; tp = last_type }, last_type)
+    | [] -> 
+        raise (TypeError (InvalidExpression { msg = "Empty comma expression"; loc = loc }))
 
 and infertype_lval env = function
   | Var id ->
@@ -155,122 +227,198 @@ let process_single_decl (env, typed_decls: environment * single_declaration list
   (new_env, (typed_decl :> single_declaration) :: typed_decls)
  
 
-let typecheck_declaration_block (env : environment) (Ast.DeclBlock decls) =
-  (* Fold over the declarations and process each one *)
-  let decls = decls.declarations in
-  let new_env, typed_decls = List.fold_left process_single_decl (env, []) decls in
-  (TypedAst.DeclBlock (List.rev typed_decls), new_env)
+  let typecheck_declaration_block (env : environment) (Ast.DeclBlock decls) =
+    (* Fold over the declarations and process each one *)
+    let decls = decls.declarations in
+    let new_env, typed_decls = List.fold_left process_single_decl (env, []) decls in
+    (* Return a DeclBlock with the correct field name *)
+    (TypedAst.DeclBlock { declarations = List.rev typed_decls }, new_env)
 
-let rec typecheck_statement env (stm: Ast.statement) =
-  match stm with
+  let rec typecheck_statement env (stm: Ast.statement) =
+    match stm with
+    | VarDeclStm (DeclBlock declarations) ->
+      (* Fold over the list of declarations, processing each one in sequence *)
+      let declarations = declarations.declarations in
+      let final_env, typed_decls = List.fold_left process_single_decl (env, []) declarations in
 
-  | VarDeclStm (DeclBlock declarations) ->
-    (* Fold over the list of declarations, processing each one in sequence *)
-    let declarations = declarations.declarations in
-    let final_env, typed_decls = List.fold_left process_single_decl (env, []) declarations in
+      (* Reverse the list of typed declarations since fold_left accumulates them in reverse order *)
+      TypedAst.VarDeclStm (TypedAst.DeclBlock {declarations = List.rev typed_decls}), final_env
 
-    (* Reverse the list of typed declarations since fold_left accumulates them in reverse order *)
-    TypedAst.VarDeclStm (TypedAst.DeclBlock (List.rev typed_decls)), final_env
+    | BreakStm { loc } ->
+        if not env.in_loop then
+          raise (TypeError (InvalidBreakContinue { msg = "Break statement outside of loop"; loc = loc }));
+        TypedAst.BreakStm, env
 
-  | BreakStm { loc } ->
-      if not env.in_loop then
-        raise (TypeError (InvalidBreakContinue { msg = "Break statement outside of loop"; loc = loc }));
-      TypedAst.BreakStm, env
+    | ContinueStm { loc } ->
+        if not env.in_loop then
+          raise (TypeError (InvalidBreakContinue { msg = "Continue statement outside of loop"; loc = loc }));
+        TypedAst.ContinueStm, env
 
-  | ContinueStm { loc } ->
-      if not env.in_loop then
-        raise (TypeError (InvalidBreakContinue { msg = "Continue statement outside of loop"; loc = loc }));
-      TypedAst.ContinueStm, env
+    | WhileStm { cond; body; loc } ->
+        let tcond, cond_tp = infertype_expr env cond in
+        if cond_tp <> TAst.Bool then
+          raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = cond_tp; loc = loc }));
+        let new_env = { env with in_loop = true } in (* Enter the loop *)
+        let tbody, _ = typecheck_statement new_env body in
+        let updated_env = { env with in_loop = false } in (* Exit the loop *)
+        TAst.WhileStm { cond = tcond; body = tbody }, updated_env
 
-  | WhileStm { cond; body; loc } ->
-      let tcond, cond_tp = infertype_expr env cond in
-      if cond_tp <> TAst.Bool then
-        raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = cond_tp; loc = loc }));
-      let new_env = { env with in_loop = true } in (* Enter the loop *)
+    | ForStm { init; cond; update; body; loc } ->
+      let update_env = { env with expr_context = FuncArgContext } in
+      validate_expr_context update_env (Option.get update) loc;
+      let tinit, env_after_init = match init with
+        | Some (FIExpr expr) -> 
+            let texpr, _ = infertype_expr env expr in
+            (Some (TypedAst.FIExpr texpr), env)
+        | Some (FIDecl decl_block) ->
+            let tdecl_block, new_env = typecheck_declaration_block env decl_block in
+            (Some (TypedAst.FIDecl tdecl_block), new_env)
+        | None -> (None, env) in
+        
+      (* Handle the conditional expression *)
+      let tcond, cond_tp = 
+        match cond with
+        | Some expr -> 
+            let texpr, tp = infertype_expr env_after_init expr in
+            if tp <> TAst.Bool then
+              raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = tp; loc = loc }));
+            (Some texpr, tp)
+        | None -> 
+            (None, TAst.Bool)
+      in
+
+      let titer, _ = match update with
+        | Some expr -> 
+            let texpr, tp = infertype_expr env_after_init expr in
+            (Some texpr, tp)
+        | None -> 
+            (None, TAst.Int)
+      in
+
+      let new_env = { env_after_init with in_loop = true } in  (* Enter the loop *)
       let tbody, _ = typecheck_statement new_env body in
-      let updated_env = { env with in_loop = false } in (* Exit the loop *)
-      TAst.WhileStm { cond = tcond; body = tbody }, updated_env
+      let updated_env = { env with in_loop = false } in  (* Exit the loop *)
 
-  | ForStm { init; cond; update; body; loc } ->
-    let tinit, env_after_init = match init with
-      | Some (FIExpr expr) -> 
-          let texpr, _ = infertype_expr env expr in
-          (Some (TypedAst.FIExpr texpr), env)
-      | Some (FIDecl decl_block) ->
-          let tdecl_block, new_env = typecheck_declaration_block env decl_block in
-          (Some (TypedAst.FIDecl tdecl_block), new_env)
-      | None -> (None, env) in
-      
-    (* Handle the conditional expression *)
-    let tcond, cond_tp = 
-      match cond with
-      | Some expr -> 
-          let texpr, tp = infertype_expr env_after_init expr in
-          if tp <> TAst.Bool then
-            raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = tp; loc = loc }));
-          (Some texpr, tp)
-      | None -> 
-          (None, TAst.Bool)
-    in
+      TAst.ForStm { init = tinit; cond = tcond; update = titer; body = tbody }, updated_env
 
-    let titer, _ = match update with
-      | Some expr -> 
-          let texpr, tp = infertype_expr env_after_init expr in
-          (Some texpr, tp)
-      | None -> 
-          (None, TAst.Int)
-    in
+    | CompoundStm { stms; _ } ->
+      let rec check_statements env acc = function
+        | [] -> List.rev acc, env
+        | stm :: stms ->
+            let typed_stm, new_env = typecheck_statement env stm in
+            check_statements new_env (typed_stm :: acc) stms
+      in
+      let typed_stms, final_env = check_statements env [] stms in
+      TAst.CompoundStm { stms = typed_stms }, env
 
-    let new_env = { env_after_init with in_loop = true } in  (* Enter the loop *)
-    let tbody, _ = typecheck_statement new_env body in
-    let updated_env = { env with in_loop = false } in  (* Exit the loop *)
+    | ReturnStm { ret; loc } ->
+        let texpr, _ = infertype_expr env ret in
+        TAst.ReturnStm { ret = texpr }, env
 
-    TAst.ForStm { init = tinit; cond = tcond; update = titer; body = tbody }, updated_env
-
-  | CompoundStm { stms; _ } ->
-    let rec check_statements env acc = function
-      | [] -> List.rev acc, env
-      | stm :: stms ->
-          let typed_stm, new_env = typecheck_statement env stm in
-          check_statements new_env (typed_stm :: acc) stms
-    in
-    let typed_stms, final_env = check_statements env [] stms in
-    TAst.CompoundStm { stms = typed_stms }, env
-
-  | ReturnStm { ret; loc } ->
-      let texpr, _ = infertype_expr env ret in
-      TAst.ReturnStm { ret = texpr }, env
-
-  | ExprStm { expr = Some expr; _ } ->
-      let texpr, _ = infertype_expr env expr in
+    | ExprStm { expr = Some expr; loc } -> 
+      let stmt_env = { env with expr_context = ExprStmtContext } in
+      validate_expr_context stmt_env expr loc;
+      let texpr, _ = infertype_expr stmt_env expr in
       TAst.ExprStm { expr = Some texpr }, env
+      
+    | ExprStm { expr = None; loc } -> 
+        (* Handle the case where there is no expression, e.g., a placeholder for missing expression *)
+        raise (TypeError (InvalidExpression {
+          msg = "Expression statement must have an expression.";
+          loc = loc
+        }))
+          
+    | IfThenElseStm { cond; thbr; elbro; loc} ->
+        let tcond, cond_tp = infertype_expr env cond in
+        if cond_tp <> TAst.Bool then
+          raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = cond_tp; loc = loc }));
+        let tthbr, _ = typecheck_statement env thbr in
+        let telbro, _ = match elbro with
+          | Some elbr -> let telbr, _ = typecheck_statement env elbr in Some telbr, env
+          | None -> None, env in
+        TAst.IfThenElseStm { cond = tcond; thbr = tthbr; elbro = telbro }, env
 
-  | ExprStm { expr = None; _ } ->
-      TAst.ExprStm { expr = None }, env
 
-  | IfThenElseStm { cond; thbr; elbro; loc } ->
-      let tcond, cond_tp = infertype_expr env cond in
-      if cond_tp <> TAst.Bool then
-        raise (TypeError (TypeMismatch { expected = TAst.Bool; actual = cond_tp; loc = loc }));
-      let tthbr, _ = typecheck_statement env thbr in
-      let telbro, _ = match elbro with
-        | Some elbr -> let telbr, _ = typecheck_statement env elbr in Some telbr, env
-        | None -> None, env in
-      TAst.IfThenElseStm { cond = tcond; thbr = tthbr; elbro = telbro }, env
-
-let typecheck_prog (prog: Ast.program) : TypedAst.program =
-  let env = make_env library_functions in
-  let rec check_statements env acc = function
-    | [] -> 
-        if not (List.exists (function TypedAst.ReturnStm _ -> true | _ -> false) acc) then
-          raise (TypeError (MissingReturn { loc = Location.dummy_loc }))
-        else
-          List.rev acc
-    | stm :: stms ->
-        stm_counter := !stm_counter + 1;
-        let typed_stm, new_env = typecheck_statement env stm in
-        check_statements new_env (typed_stm :: acc) stms
+let collect_function_signatures (functions: Ast.function_decl list) : environment =
+  let initial_env = make_env library_functions in
+  
+  (* Validate and add each function to the environment *)
+  let validate_and_add_function env (Ast.Function {f_name; return_type; params; body; loc}) =
+    let Ast.Ident { name; _ } = f_name in
+    
+    (* Check for duplicate function definitions *)
+    if lookup_fun env name <> None then
+      raise (TypeError (DuplicateFunction { name; loc }));
+    
+    (* Add function to environment *)
+    insert_fun env name (Ast.Function { f_name; return_type; params; body; loc })
   in
-  check_statements env [] prog
+  
+  (* Add all functions to the environment *)
+  let env_with_functions = List.fold_left validate_and_add_function initial_env functions in
+  
+  (* Check if main function exists with return type int *)
+  let check_main_function env =
+    match lookup_fun env "main" with
+    | Some (Ast.Function {return_type = Ast.Int _; _}) -> env
+    | Some _ -> raise (TypeError (InvalidMainFunction { msg = "Invalidain" }))
+    | None -> raise (TypeError (MissingMainFunction { msg = "main" }))
+  in
+
+  (* Perform the check *)
+  check_main_function env_with_functions
 
 
+let typecheck_function_body env (Ast.Function { f_name; return_type; params; body; loc }) =
+  let Ident { name; _ } = f_name in
+  let ret_type = convert_type return_type in
+  
+  (* Create new environment with parameters *)
+  let env_with_params = List.fold_left (fun env (Parameter { name = param_name; tp; _ }) ->
+    let Ident { name = param_name_str; _ } = param_name in
+    insert_local_decl env param_name_str (convert_type tp)
+  ) env params in
+  
+  (* Type check the function body *)
+  let typed_body = List.map (fun stmt ->
+    let typed_stmt, _ = typecheck_statement env_with_params stmt in
+    typed_stmt
+  ) body in
+  
+  (* Verify return type matches all return statements *)
+  let verify_returns ret_type stmt =
+    match stmt with
+    | Ast.ReturnStm { ret; _ } ->  (* Use TypedAst instead of Ast *)
+        let _, ret_tp = infertype_expr env_with_params ret in
+        if ret_tp <> ret_type then
+          raise (TypeError (ReturnTypeMismatch { 
+            expected = ret_type; 
+            actual = ret_tp; 
+            loc = loc 
+          }))
+    | _ -> ()
+  in
+  List.iter (verify_returns ret_type) typed_body;
+
+  TAst.Function {
+    f_name = TAst.Ident { sym = Symbol.symbol name };
+    return_type = ret_type;
+    params = List.map (fun (Parameter p) -> 
+      TAst.Parameter {
+        name = TAst.Ident { sym = Symbol.symbol (let Ident { name; _ } = p.name in name) };
+        tp = convert_type p.tp;
+        loc = p.loc
+      }
+    ) params;
+    body = typed_body;
+    loc = loc
+  }
+
+  let typecheck_prog (prog: program) : TypedAst.program =
+    (* First pass: collect function signatures *)
+    let fun_env = collect_function_signatures prog.functions in
+    
+    (* Second pass: type check function bodies *)
+    let typed_functions = List.map (typecheck_function_body fun_env) prog.functions in
+    
+    typed_functions 

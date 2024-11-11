@@ -45,6 +45,7 @@
 %type <Ast.expr> call
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
+
 (*New rules for W7*)
 %type <Ast.single_declaration> function_decl
 %type <Ast.param list> param_list
@@ -62,7 +63,7 @@
 %%
 
 program:
-    statements EOF { $1 }
+    functions_and_statements EOF { { functions = fst $1; main_body = snd $1 } }
 
 statements:
     statement
@@ -255,7 +256,7 @@ expr:
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
   | expr COMMA expr
-        {}
+      {}
 
 lval:
     IDENT
@@ -284,9 +285,6 @@ arg_list:
       { [] }
 
 (*New rules for W7*)
-program:
-    functions_and_statements EOF { { functions = fst $1; main_body = snd $1 } }
-
 functions_and_statements:
     function_decl functions_and_statements
       { ($1 :: fst $2, snd $2) }

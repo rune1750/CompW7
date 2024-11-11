@@ -8,8 +8,8 @@ let typ_to_string = function
 | Bool -> "bool"
 | ErrorType -> "'type error'"
 
-(* producing trees for pretty printing *)
-let ident_to_tree (Ident {sym}) = Pretty.make_ident_line (Sym.name sym)
+(* Producing trees for pretty printing *)
+let ident_to_tree (Ident {sym; _}) = Pretty.make_ident_line (Sym.name sym)
 
 let typ_to_tree tp =
   match tp with
@@ -45,13 +45,17 @@ let rec expr_to_tree e =
   | Boolean {bool; _} -> PBox.hlist ~bars:false [Pretty.make_info_node_line "BooleanLit("; Pretty.make_keyword_line (if bool then "true" else "false"); Pretty.make_info_node_line ")"]
   | BinOp {left; op; right; tp; _} -> PBox.tree (Pretty.make_info_node_line "BinOp") [typ_to_tree tp; expr_to_tree left; binop_to_tree op; expr_to_tree right]
   | UnOp {op; operand; tp; _} -> PBox.tree (Pretty.make_info_node_line "UnOp") [typ_to_tree tp; unop_to_tree op; expr_to_tree operand]
+  | CommaExpr {exprs; tp} -> 
+    PBox.tree (Pretty.make_info_node_line "CommaExpr") 
+      [typ_to_tree tp; 
+       PBox.hlist ~bars:false (List.map expr_to_tree exprs)]  (* Recursively print the comma-expressions *)
   | Lval l -> PBox.tree (Pretty.make_info_node_line "Lval") [lval_to_tree l]
   | Assignment {lvl; rhs; tp; _} -> PBox.tree (Pretty.make_info_node_line "Assignment") [typ_to_tree tp; lval_to_tree lvl; expr_to_tree rhs]
   | Call {fname; args; tp; _} ->
     PBox.tree (Pretty.make_info_node_line "Call")
       [typ_to_tree tp; 
       PBox.hlist ~bars:false [Pretty.make_info_node_line "FunName: "; ident_to_tree fname];
-        PBox.tree (Pretty.make_info_node_line "Args") (List.map (fun e -> expr_to_tree e) args)]
+        PBox.tree (Pretty.make_info_node_line "Args") (List.map expr_to_tree args)]
 and lval_to_tree l =
   match l with
   | Var {ident; tp} -> PBox.hlist ~bars:false [Pretty.make_info_node_line "Var("; ident_to_tree ident; Pretty.make_info_node_line ")"; PBox.line " : "; typ_to_tree tp;]
@@ -63,6 +67,7 @@ let single_declaration_to_tree (Declaration {name; tp; body; _}) =
     PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; expr_to_tree body]]
 
 let declaration_block_to_tree (DeclBlock declarations) =
+  let declarations = declarations.declarations in
   PBox.tree (Pretty.make_keyword_line "VarDecl") (List.map single_declaration_to_tree declarations)
 
 let for_init_to_tree = function
@@ -87,11 +92,22 @@ let rec statement_to_tree c =
         PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; Option.fold ~none:PBox.empty ~some:expr_to_tree cond];
         PBox.hlist ~bars:false [Pretty.make_info_node_line "Update: "; Option.fold ~none:PBox.empty ~some:expr_to_tree update];
         PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; statement_to_tree body]]
-  | BreakStm -> Pretty.make_keyword_line "BreakStm"
+  | BreakStm  -> Pretty.make_keyword_line "BreakStm"
   | ContinueStm -> Pretty.make_keyword_line "ContinueStm"
   | CompoundStm {stms; _} -> PBox.tree (Pretty.make_info_node_line "CompoundStm") (statement_seq_to_forest stms)
   | ReturnStm {ret; _} -> PBox.hlist ~bars:false [Pretty.make_keyword_line "ReturnValStm: "; expr_to_tree ret]
 and statement_seq_to_forest stms = List.map statement_to_tree stms
 
-let program_to_tree prg =
-  PBox.tree (Pretty.make_info_node_line "Program") (statement_seq_to_forest prg)
+let param_to_tree (Param {paramname; typ; _}) =
+  PBox.hlist ~bars:false [ident_to_tree paramname; PBox.line " : "; typ_to_tree typ]
+
+let function_decl_to_tree (Function {f_name; funtype = FunTyp {ret; params}; body; _}) =
+  PBox.tree (Pretty.make_info_node_line "Function")
+    [PBox.hlist ~bars:false [Pretty.make_info_node_line "Name: "; ident_to_tree f_name];
+     PBox.hlist ~bars:false [Pretty.make_info_node_line "Return Type: "; typ_to_tree ret];
+     PBox.tree (Pretty.make_info_node_line "Params") (List.map param_to_tree params);
+     PBox.tree (Pretty.make_info_node_line "Body") (statement_seq_to_forest body)]
+
+let program_to_tree functions =
+  PBox.tree (Pretty.make_info_node_line "Program")
+    [PBox.tree (Pretty.make_info_node_line "Functions") (List.map function_decl_to_tree functions)]

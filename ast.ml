@@ -7,6 +7,7 @@ type ident = Ident of {name : string; loc : Loc.location}
 type typ =
 | Int of {loc : Loc.location}
 | Bool of {loc : Loc.location}
+| Void of {loc : Loc.location}
 
 type binop =
 | Plus of {loc : Loc.location}
@@ -35,6 +36,7 @@ type expr =
 | Lval of lval
 | Assignment of {lvl : lval; rhs : expr; loc : Loc.location}
 | Call of {fname : ident; args : expr list; loc : Loc.location}
+| CommaExpr of {exprs : expr list; loc : Loc.location}
 and lval =
 | Var of ident
 
@@ -67,7 +69,4 @@ type function_decl = Function of {
   loc : Loc.location
 }
 
-type program = {
-  functions : function_decl list;  
-  main_body : statement list       
-}
+type program = function_decl list 
