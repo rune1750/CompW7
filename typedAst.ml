@@ -1,4 +1,6 @@
+(* typedast.ml *)
 module Sym = Symbol
+module Loc = Location  (* Added to use Location.location *)
 
 type ident = Ident of { sym : Sym.symbol }
 
@@ -40,15 +42,15 @@ type for_init =
   | FIExpr of expr
 
 type statement =
-  | VarDeclStm of declaration_block
-  | ExprStm of { expr : expr option }
-  | IfThenElseStm of { cond : expr; thbr : statement; elbro : statement option }
-  | WhileStm of { cond : expr; body : statement }
-  | ForStm of { init : for_init option; cond : expr option; update : expr option; body : statement }
-  | BreakStm
-  | ContinueStm
-  | CompoundStm of { stms : statement list }
-  | ReturnStm of { ret : expr }
+  | VarDeclStm of { decl_block : declaration_block; loc : Loc.location }
+  | ExprStm of { expr : expr option; loc : Loc.location }
+  | IfThenElseStm of { cond : expr; thbr : statement; elbro : statement option; loc : Loc.location }
+  | WhileStm of { cond : expr; body : statement; loc : Loc.location }
+  | ForStm of { init : for_init option; cond : expr option; update : expr option; body : statement; loc : Loc.location }
+  | BreakStm of { loc : Loc.location }
+  | ContinueStm of { loc : Loc.location }
+  | CompoundStm of { stms : statement list; loc : Loc.location }
+  | ReturnStm of { ret : expr; loc : Loc.location }
 
 type param = Param of { paramname : ident; typ : typ }
 
@@ -58,6 +60,7 @@ type function_decl = Function of {
   f_name : ident;
   funtype : funtype;
   body : statement list;
+  loc : Loc.location  (* Added location field *)
 }
 
 type program = function_decl list

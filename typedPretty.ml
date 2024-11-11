@@ -1,3 +1,4 @@
+(* typedpretty.ml *)
 module Sym = Symbol
 module PBox = PrintBox
 open TypedAst
@@ -37,7 +38,7 @@ let binop_to_tree op =
 let unop_to_tree op =
   match op with
   | Neg -> Pretty.make_keyword_line "Neg"
-  | Lnot -> Pretty.make_keyword_line "Lor"
+  | Lnot -> Pretty.make_keyword_line "Lnot"
 
 let rec expr_to_tree e =
   match e with
@@ -66,8 +67,7 @@ let single_declaration_to_tree (Declaration {name; tp; body; _}) =
     PBox.hlist ~bars:false [Pretty.make_info_node_line "Type: "; typ_to_tree tp];
     PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; expr_to_tree body]]
 
-let declaration_block_to_tree (DeclBlock declarations) =
-  let declarations = declarations.declarations in
+let declaration_block_to_tree (DeclBlock { declarations }) =
   PBox.tree (Pretty.make_keyword_line "VarDecl") (List.map single_declaration_to_tree declarations)
 
 let for_init_to_tree = function
@@ -76,32 +76,36 @@ let for_init_to_tree = function
 
 let rec statement_to_tree c =
   match c with
-  | VarDeclStm db -> PBox.hlist ~bars:false [PBox.line "DeclStm: "; declaration_block_to_tree db]
-  | ExprStm {expr; _} -> PBox.hlist ~bars:false [Pretty.make_info_node_line "ExprStm: "; Option.fold ~none:PBox.empty ~some:expr_to_tree expr]
-  | IfThenElseStm {cond; thbr; elbro; _} ->
-    PBox.tree (Pretty.make_keyword_line "IfStm")
-      ([PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; expr_to_tree cond]; PBox.hlist ~bars:false [Pretty.make_info_node_line "Then-Branch: "; statement_to_tree thbr]] @
-        match elbro with None -> [] | Some elbr -> [PBox.hlist ~bars:false [Pretty.make_info_node_line "Else-Branch: "; statement_to_tree elbr]])
-  | WhileStm {cond; body; _} ->
-    PBox.tree (Pretty.make_keyword_line "WhileStm") 
-      [PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; expr_to_tree cond];
-        PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; statement_to_tree body]]
-  | ForStm {init; cond; update; body; _} ->
-    PBox.tree (Pretty.make_keyword_line "ForStm") 
-      [PBox.hlist ~bars:false [Pretty.make_info_node_line "Init: "; Option.fold ~none:PBox.empty ~some:for_init_to_tree init];
-        PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; Option.fold ~none:PBox.empty ~some:expr_to_tree cond];
-        PBox.hlist ~bars:false [Pretty.make_info_node_line "Update: "; Option.fold ~none:PBox.empty ~some:expr_to_tree update];
-        PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; statement_to_tree body]]
-  | BreakStm  -> Pretty.make_keyword_line "BreakStm"
-  | ContinueStm -> Pretty.make_keyword_line "ContinueStm"
-  | CompoundStm {stms; _} -> PBox.tree (Pretty.make_info_node_line "CompoundStm") (statement_seq_to_forest stms)
-  | ReturnStm {ret; _} -> PBox.hlist ~bars:false [Pretty.make_keyword_line "ReturnValStm: "; expr_to_tree ret]
+  | VarDeclStm { decl_block; loc } -> 
+      PBox.hlist ~bars:false [PBox.line "DeclStm: "; declaration_block_to_tree decl_block]
+  | ExprStm { expr; loc } -> 
+      PBox.hlist ~bars:false [Pretty.make_info_node_line "ExprStm: "; Option.fold ~none:PBox.empty ~some:expr_to_tree expr]
+  | IfThenElseStm { cond; thbr; elbro; loc } ->
+      PBox.tree (Pretty.make_keyword_line "IfStm")
+        ([PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; expr_to_tree cond]; PBox.hlist ~bars:false [Pretty.make_info_node_line "Then-Branch: "; statement_to_tree thbr]] @
+          match elbro with None -> [] | Some elbr -> [PBox.hlist ~bars:false [Pretty.make_info_node_line "Else-Branch: "; statement_to_tree elbr]])
+  | WhileStm { cond; body; loc } ->
+      PBox.tree (Pretty.make_keyword_line "WhileStm") 
+        [PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; expr_to_tree cond];
+          PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; statement_to_tree body]]
+  | ForStm { init; cond; update; body; loc } ->
+      PBox.tree (Pretty.make_keyword_line "ForStm") 
+        [PBox.hlist ~bars:false [Pretty.make_info_node_line "Init: "; Option.fold ~none:PBox.empty ~some:for_init_to_tree init];
+          PBox.hlist ~bars:false [Pretty.make_info_node_line "Cond: "; Option.fold ~none:PBox.empty ~some:expr_to_tree cond];
+          PBox.hlist ~bars:false [Pretty.make_info_node_line "Update: "; Option.fold ~none:PBox.empty ~some:expr_to_tree update];
+          PBox.hlist ~bars:false [Pretty.make_info_node_line "Body: "; statement_to_tree body]]
+  | BreakStm { loc } -> Pretty.make_keyword_line "BreakStm"
+  | ContinueStm { loc } -> Pretty.make_keyword_line "ContinueStm"
+  | CompoundStm { stms; loc } ->
+      PBox.tree (Pretty.make_info_node_line "CompoundStm") (statement_seq_to_forest stms)
+  | ReturnStm { ret; loc } ->
+      PBox.hlist ~bars:false [Pretty.make_keyword_line "ReturnValStm: "; expr_to_tree ret]
 and statement_seq_to_forest stms = List.map statement_to_tree stms
 
 let param_to_tree (Param {paramname; typ; _}) =
   PBox.hlist ~bars:false [ident_to_tree paramname; PBox.line " : "; typ_to_tree typ]
 
-let function_decl_to_tree (Function {f_name; funtype = FunTyp {ret; params}; body; _}) =
+let function_decl_to_tree (Function {f_name; funtype = FunTyp {ret; params}; body; loc }) =
   PBox.tree (Pretty.make_info_node_line "Function")
     [PBox.hlist ~bars:false [Pretty.make_info_node_line "Name: "; ident_to_tree f_name];
      PBox.hlist ~bars:false [Pretty.make_info_node_line "Return Type: "; typ_to_tree ret];

@@ -1,3 +1,4 @@
+(* driver.ml *)
 open Printf
 open Pretty
 open Semant
@@ -23,12 +24,17 @@ let compile_prog filename =
       (* Perform semantic analysis *)
       let typed_ast = Semant.typecheck_prog ast in
       printf "Semantic analysis successful!\n";
+      (* Print the typed AST *)
+      printf "Typed AST:\n%!";
+      let typed_tree = TypedPretty.program_to_tree typed_ast in
+      PrintBox_text.output stdout typed_tree;
+      printf "\n%!";
       (* Generate code *)
       let code = Codegen.codegen_prog typed_ast in
       printf "Code generation successful!\n";
       (* Output the generated code *)
-      let code = Ll.string_of_prog code in
-      printf "Generated Code:\n%s\n" code;
+      let code_str = Ll.string_of_prog code in
+      printf "Generated Code:\n%s\n" code_str;
       ()
     with
     | Parser.Error ->
