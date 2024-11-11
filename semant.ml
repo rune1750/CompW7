@@ -361,7 +361,7 @@ let collect_function_signatures (functions: Ast.function_decl list) : environmen
   let check_main_function env =
     match lookup_fun env "main" with
     | Some (Ast.Function {return_type = Ast.Int _; _}) -> env
-    | Some _ -> raise (TypeError (InvalidMainFunction { msg = "Invalidain" }))
+    | Some _ -> raise (TypeError (InvalidMainFunction { msg = "Invalidmain" }))
     | None -> raise (TypeError (MissingMainFunction { msg = "main" }))
   in
 

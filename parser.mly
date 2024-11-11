@@ -46,10 +46,11 @@
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
 
-(*New rules for W7*)
-%type <Ast.single_declaration> function_decl
-%type <Ast.param list> param_list
-%type <Ast.param> param
+
+%type <Ast.parameter> param
+%type <Ast.parameter list> param_list
+%type <Ast.function_decl list> functions
+%type <Ast.function_decl> function_decl
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -63,13 +64,12 @@
 %%
 
 program:
-    functions_and_statements EOF { { functions = fst $1; main_body = snd $1 } }
+    functions EOF { $1 }
 
 statements:
-    statement
-      { [$1] }
-  | statement statements
-      { $1 :: $2 }
+  statement { [$1] }
+| statement statements { $1 :: $2 }
+| { [] } (* for empty block *)
 
 statement:
     var_decl_stmt
@@ -139,6 +139,8 @@ type_expr:
       { Int { loc = mk_loc $startpos $endpos } }
   | BOOL
       { Bool { loc = mk_loc $startpos $endpos } }
+  | VOID
+      { Void { loc = mk_loc $startpos $endpos } }
 
 expr_stmt:
     expr SEMICOLON
@@ -256,67 +258,58 @@ expr:
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
   | expr COMMA expr
-      {}
+      { CommaExpr { exprs = [$1; $3]; loc = mk_loc $startpos $endpos } }
+
+assignment:
+    lval ASSIGN expr
+      { Assignment { lvl = $1; rhs = $3; loc = mk_loc $startpos $endpos } }
 
 lval:
     IDENT
       { Var (Ident { name = $1; loc = mk_loc $startpos $endpos }) }
 
-assignment:
-    lval ASSIGN expr %prec EQ
-      { Assignment { lvl = $1; rhs = $3; loc = mk_loc $startpos $endpos } }
-
 call:
     IDENT LPAREN arg_list RPAREN
-      { 
-        Call { 
-          fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
-          args = $3;
-          loc = mk_loc $startpos $endpos 
-        } 
-      }
+      { Call { fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; args = $3; loc = mk_loc $startpos $endpos } }
 
 arg_list:
-    expr
+    /* empty */
+      { [] }
+  | expr
       { [$1] }
   | expr COMMA arg_list
       { $1 :: $3 }
-  | /* empty */
-      { [] }
 
-(*New rules for W7*)
-functions_and_statements:
-    function_decl functions_and_statements
-      { ($1 :: fst $2, snd $2) }
-  | statement functions_and_statements
-      { (fst $2, $1 :: snd $2) }
-  | /* empty */
-      { ([], []) }
+functions:
+  function_decl { [$1] }
+| function_decl functions { $1 :: $2 }
 
 function_decl:
-    IDENT LPAREN param_list RPAREN COLON type_expr LBRACE statements RBRACE
+    type_expr IDENT LPAREN param_list RPAREN LBRACE statements RBRACE
       { 
-        Function { 
-          fname = Ident { name = $1; loc = mk_loc $startpos $endpos };
-          funtype = FunTyp { ret = $6; params = $3 };
-          body = $8;
-          loc = mk_loc $startpos $endpos 
-        } 
+        Function {
+          return_type = $1;            
+          f_name = Ident { name = $2; loc = mk_loc $startpos $endpos };
+          params = $4;               
+          body = $7;                    
+          loc = mk_loc $startpos $endpos;
+        }
       }
 
 param_list:
-    param COMMA param_list
-      { $1 :: $3 }
+    /* empty */
+      { [] }
   | param
       { [$1] }
-  | /* empty */
-      { [] }
+  | param COMMA param_list
+      { $1 :: $3 }
 
 param:
     IDENT COLON type_expr
       { 
-        Param { 
-          paramname = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
-          typ = $3 
+        Parameter { 
+          name = Ident { name = $1; loc = mk_loc $startpos $endpos }; 
+          tp = $3;
+          loc = mk_loc $startpos $endpos
         } 
       }

@@ -1,0 +1,9 @@
+int plus(x: int, y: int) {
+    return x + y;
+}
+
+
+int main() {
+  var t = plus(5, 8);
+  return t;
+}

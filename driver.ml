@@ -2,7 +2,6 @@
 open Printf
 open Pretty
 open Semant
-open Codegen     (* Include the Codegen module *)
 open Errors
 open Location
 open Ll
@@ -29,13 +28,6 @@ let compile_prog filename =
       let typed_tree = TypedPretty.program_to_tree typed_ast in
       PrintBox_text.output stdout typed_tree;
       printf "\n%!";
-      (* Generate code *)
-      let code = Codegen.codegen_prog typed_ast in
-      printf "Code generation successful!\n";
-      (* Output the generated code *)
-      let code_str = Ll.string_of_prog code in
-      printf "Generated Code:\n%s\n" code_str;
-      ()
     with
     | Parser.Error ->
         let pos = lexbuf.Lexing.lex_curr_p in
@@ -87,4 +79,4 @@ module Location = struct
 end
 
 let () =
-  compile_prog Sys.argv.(1);
+  compile_prog "testfile1.txt";
