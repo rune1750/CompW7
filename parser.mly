@@ -54,12 +54,11 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
-%nonassoc EQ NEQ LT LE GT GE
+%nonassoc EQ NEQ LT LE GT GE ASSIGN
 %left LOR
 %left LAND
 %left PLUS MINUS
 %left MUL DIV REM
-%left COMMA
 %right UMINUS LNOT
 
 %%
@@ -70,7 +69,6 @@ program:
 statements:
   statement { [$1] }
 | statement statements { $1 :: $2 }
-| { [] } (* for empty block *)
 
 statement:
     var_decl_stmt
@@ -272,7 +270,7 @@ expr:
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
       
-  | expr COMMA expr { CommaExpr { left = $1; right = $3; loc = mk_loc $startpos $endpos } }
+  | LPAREN expr COMMA expr RPAREN { CommaExpr { left = $2; right = $4; loc = mk_loc $startpos $endpos } }
 
 assignment:
     lval ASSIGN expr

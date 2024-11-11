@@ -131,7 +131,6 @@ let rec infertype_expr env (expr: Ast.expr) =
     begin match lookup_fun env name with
     | Some (Ast.Function { f_name; return_type; params; _ }) ->  
         (* Manually convert Ast.Function to a TypedAst.Function here *)
-        let () = printf "function found:\n%!" in
         (* Convert function return type and parameters *)
         let ret = convert_type return_type in
         let tparams = List.map (fun (Ast.Parameter { name; tp; _ }) ->

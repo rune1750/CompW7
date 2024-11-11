@@ -34,7 +34,6 @@ let make_env function_decls =
 
 (* Insert a local declaration into the environment with a TypedAst.typ *)
 let insert_local_decl env name typ =
-  let () = printf "Inserting local decl %s\n" name in
   { env with variables = (name, typ) :: env.variables }
 
 let insert_fun env name func_decl =
