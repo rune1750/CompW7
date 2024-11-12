@@ -1,8 +1,9 @@
-// Comma Expression in Loop Update
+// Variable Declarations with Function Calls
+int multiply(a: int, b: int) {
+    return a * b;
+}
+
 int main() {
-  var i = 0;
-  for (; i < 5; (i = i + 1, print_integer(i))) {
-    // Loop body
-  }
-  return 0;  // Should print numbers 1 to 5
+    var product: int = multiply(4, 5);
+    return product;
 }

@@ -5,6 +5,7 @@ open Semant
 open Errors
 open Location
 open Ll
+open Codegen
 
 let compile_prog filename =
   try
@@ -28,6 +29,12 @@ let compile_prog filename =
       let typed_tree = TypedPretty.program_to_tree typed_ast in
       PrintBox_text.output stdout typed_tree;
       printf "\n%!";
+      let code = Codegen.codegen_prog typed_ast in
+      printf "Code generation successful!\n";
+      (* Output the generated code *)
+      let code = Ll.string_of_prog code in
+      printf "Generated Code:\n%s\n" code;
+      ()
     with
     | Parser.Error ->
         let pos = lexbuf.Lexing.lex_curr_p in

@@ -1,4 +1,6 @@
-// Comma Expression in Return Statement
+// Return Statements with Comma Expressions
 int main() {
-  return (1 + 2, 3 + 4);  // Should return 7
+    var a: int = 1;
+    var b: int = 2;
+    return (a = a + b, a * b);
 }

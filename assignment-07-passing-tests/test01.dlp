@@ -1,5 +1,9 @@
-// Comma Expression in Variable Initialization
+// Top-Level Function Declarations
+int add(x: int, y: int) {
+    return x + y;
+}
+
 int main() {
-  var x = (1, 2, 3);
-  return x;  // Should return 3
+    var result: int = add(5, 10);
+    return result;
 }

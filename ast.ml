@@ -1,5 +1,3 @@
-(* -- Use this in your solution without modifications *)
-
 module Loc = Location
 
 type ident = Ident of {name : string; loc : Loc.location}

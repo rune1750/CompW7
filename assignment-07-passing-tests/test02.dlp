@@ -1,6 +1,6 @@
-// Comma Expression in Assignment
+// Function Calls with Comma Expressions
 int main() {
-  var x = 0;
-  x = (x + 1, x + 2, x + 3);
-  return x;  // Should return 3
+    var a: int = (1, 2);
+    var b: int = (a = a + 3, a * 2);
+    return b;
 }

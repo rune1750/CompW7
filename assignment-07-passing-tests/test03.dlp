@@ -1,5 +1,20 @@
-// Nested Comma Expressions
+// Mutually Recursive Functions
+int is_even(x: int) {
+    if (x == 0) {
+        return 1;
+    } else {
+        return is_odd(x - 1);
+    }
+}
+
+int is_odd(x: int) {
+    if (x == 0) {
+        return 0;
+    } else {
+        return is_even(x - 1);
+    }
+}
+
 int main() {
-  var x = ((1, 2), 3);
-  return x;  // Should return 3
+    return is_even(4); // Expected: 1 (true)
 }

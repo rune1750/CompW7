@@ -1,8 +1,12 @@
-// Invalid Use - Comma Expression as Function Argument
-int foo(int x) {
-  return x;
+// Error Cases for Missing Return Statements
+int incomplete() {
+    var x: int = 5;
+    if (x > 0) {
+        return x;
+    }
+    // Missing return statement for else case
 }
 
 int main() {
-  return foo((1, 2));  // Invalid use
+    return incomplete();
 }

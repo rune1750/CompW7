@@ -1,7 +1,6 @@
-// Comma Expression in Loop Initialization
+// Ternary Operators with Comma Expressions
 int main() {
-  for (var i = 0, j = 10; i < j; i = i + 1, j = j - 1) {
-    // Loop body
-  }
-  return 0;
+    var x: int = 5;
+    var y: int = (x > 0, x * 2) ? 10 : 20;
+    return y;
 }
