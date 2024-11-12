@@ -46,7 +46,7 @@ let compile_prog filename =
         close_in inch;
         exit 1
     | e ->
-        eprintf "Unhandled exception: %s\n" (Printexc.to_string e);  (* Add this line *)
+        eprintf "Unhandled exception: %s\n" (Printexc.to_string e);
         close_in inch;
         raise e
   with
@@ -80,4 +80,9 @@ module Location = struct
 end
 
 let () =
-  compile_prog "testfile1.txt";
+  if Array.length Sys.argv <> 2 then
+    (eprintf "Usage: %s <filename>\n" Sys.argv.(0);
+     exit 1)
+  else
+    let filename = Sys.argv.(1) in
+    compile_prog filename

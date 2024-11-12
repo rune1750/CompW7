@@ -1,5 +1,5 @@
 // test10.dlp
-int main() {
-var x = print_integer(5);
-return 0;
+function main() -> int {
+    var x = print_integer(5);  // print_integer returns void
+    return x;
 }

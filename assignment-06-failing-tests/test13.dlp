@@ -1,6 +1,6 @@
 // test10.dlp
-int main() {
-var x = 10;
-x + 20;
-return 0;
+function main() -> int {
+    var x = 10;
+    x + 20;  // This expression has no effect
+    return 0;
 }
