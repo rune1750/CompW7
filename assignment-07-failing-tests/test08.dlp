@@ -1,12 +1,6 @@
-// Error Cases for Missing Return Statements
-int incomplete() {
-    var x: int = 5;
-    if (x > 0) {
-        return x;
-    }
-    // Missing return statement for else case
-}
-
-int main() {
-    return incomplete();
+// Test: Invalid Comma Expression
+int h () {
+    var x = 0;
+    x = 1, x = 2; /* Invalid expression statement, should fail */
+    return x;
 }

@@ -2058,106 +2058,14 @@ Test PASSED: Compiler reported an error as expected.
 Found test file: assignment-07-failing-tests/test08.dlp
 Test #2: assignment-07-failing-tests/test08.dlp
 Running compiler: _build/default/driver.exe assignment-07-failing-tests/test08.dlp
-Parsing successful!
-AST:
-Program
-├─Function
-│ ├─Name: incomplete
-│ ├─Return Type: Int
-│ ├─Parameters
-│ └─Body
-│   ├─DeclStm: VarDecl
-│   │          └─Declaration
-│   │            ├─Ident: x
-│   │            ├─Type: Int
-│   │            └─Body: IntLit(5)
-│   └─IfStm
-│     ├─Cond: BinOp
-│     │       ├─Lval
-│     │       │ └─Var(x)
-│     │       ├─Gt
-│     │       └─IntLit(0)
-│     └─Then-Branch: CompoundStm
-│                    └─CompoundStm
-│                      └─ReturnValStm: Lval
-│                                      └─Var(x)
-└─Function
-  ├─Name: main
-  ├─Return Type: Int
-  ├─Parameters
-  └─Body
-    └─ReturnValStm: Call
-                    ├─FunName: incomplete
-                    └─Args
-Variables in environment:
-  x 
-Variables in environment:
-Semantic analysis successful!
-Typed AST:
-Program
-└─Functions
-  ├─Function
-  │ ├─Name: incomplete
-  │ ├─Return Type: Int
-  │ ├─Params
-  │ └─Body
-  │   ├─DeclStm: VarDecl
-  │   │          └─Declaration
-  │   │            ├─Ident: x
-  │   │            ├─Type: Int
-  │   │            └─Body: IntLit(5)
-  │   └─IfStm
-  │     ├─Cond: BinOp
-  │     │       ├─Bool
-  │     │       ├─Lval
-  │     │       │ └─Var(x) : Int
-  │     │       ├─Gt
-  │     │       └─IntLit(0)
-  │     └─Then-Branch: CompoundStm
-  │                    └─CompoundStm
-  │                      └─ReturnValStm: Lval
-  │                                      └─Var(x) : Int
-  └─Function
-    ├─Name: main
-    ├─Return Type: Int
-    ├─Params
-    └─Body
-      └─ReturnValStm: Call
-                      ├─Int
-                      ├─FunName: incomplete
-                      └─Args
-Code generation successful!
-Generated Code:
-declare i64 @read_integer()
-declare void @print_integer(i64)
-
-define i64 @incomplete () {
- %x1 = alloca i64
- store i64 5, i64* %x1
- %x_val2 = load i64, i64* %x1
- %tmp3 = icmp sgt i64 %x_val2, 0
- br i1 %tmp3, label %then4, label %else5
-then4:
- %x_val7 = load i64, i64* %x1
- ret i64 %x_val7
-else5:
- br label %if_end6
-if_end6:
- ret i64 0
-}
-
-define i64 @main () {
- %tmp8 = call i64 @incomplete ()
- ret i64 %tmp8
-}
-
-Test FAILED: Compiler did not report an error as expected.
+Parser error at line 4, character 10
+Test PASSED: Compiler reported an error as expected.
 
 =======================================
 Test Summary for assignment-07-failing-tests:
 Total Tests Run: 2
-Passed Tests:    1
-Failed Tests:    1
+Passed Tests:    2
+Failed Tests:    0
 =======================================
 Running tests in assignment-07-passing-tests...
 ---------------------------------------
@@ -2551,8 +2459,171 @@ Test PASSED: Compiler succeeded as expected.
 Found test file: assignment-07-passing-tests/test04.dlp
 Test #4: assignment-07-passing-tests/test04.dlp
 Running compiler: _build/default/driver.exe assignment-07-passing-tests/test04.dlp
-Parser error at line 4, character 43
-Test FAILED: Compiler reported an error unexpectedly.
+Parsing successful!
+AST:
+Program
+└─Function
+  ├─Name: main
+  ├─Return Type: Int
+  ├─Parameters
+  └─Body
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: x
+    │            ├─Type: 
+    │            └─Body: IntLit(0)
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: y
+    │            ├─Type: 
+    │            └─Body: IntLit(0)
+    ├─ForStm
+    │ ├─Init: ForInitDecl: VarDecl
+    │ │                    └─Declaration
+    │ │                      ├─Ident: i
+    │ │                      ├─Type: 
+    │ │                      └─Body: IntLit(0)
+    │ ├─Cond: BinOp
+    │ │       ├─Lval
+    │ │       │ └─Var(i)
+    │ │       ├─Lt
+    │ │       └─IntLit(3)
+    │ ├─Update: Assignment
+    │ │         ├─Var(i)
+    │ │         └─BinOp
+    │ │           ├─Lval
+    │ │           │ └─Var(i)
+    │ │           ├─PLUS
+    │ │           └─IntLit(1)
+    │ └─Body: CompoundStm
+    │         └─CompoundStm
+    │           ├─ExprStm: Assignment
+    │           │          ├─Var(x)
+    │           │          └─BinOp
+    │           │            ├─Lval
+    │           │            │ └─Var(x)
+    │           │            ├─PLUS
+    │           │            └─Lval
+    │           │              └─Var(i)
+    │           └─ExprStm: Assignment
+    │                      ├─Var(y)
+    │                      └─BinOp
+    │                        ├─Lval
+    │                        │ └─Var(y)
+    │                        ├─PLUS
+    │                        └─IntLit(2)
+    └─ReturnValStm: CommaExpr
+                    ├─Lval
+                    │ └─Var(x)
+                    └─Lval
+                      └─Var(y)
+Variables in environment:
+  y 
+  x 
+Semantic analysis successful!
+Typed AST:
+Program
+└─Functions
+  └─Function
+    ├─Name: main
+    ├─Return Type: Int
+    ├─Params
+    └─Body
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: x
+      │            ├─Type: Int
+      │            └─Body: IntLit(0)
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: y
+      │            ├─Type: Int
+      │            └─Body: IntLit(0)
+      ├─ForStm
+      │ ├─Init: ForInitDecl: VarDecl
+      │ │                    └─Declaration
+      │ │                      ├─Ident: i
+      │ │                      ├─Type: Int
+      │ │                      └─Body: IntLit(0)
+      │ ├─Cond: BinOp
+      │ │       ├─Bool
+      │ │       ├─Lval
+      │ │       │ └─Var(i) : Int
+      │ │       ├─Lt
+      │ │       └─IntLit(3)
+      │ ├─Update: Assignment
+      │ │         ├─Int
+      │ │         ├─Var(i) : Int
+      │ │         └─BinOp
+      │ │           ├─Int
+      │ │           ├─Lval
+      │ │           │ └─Var(i) : Int
+      │ │           ├─PLUS
+      │ │           └─IntLit(1)
+      │ └─Body: CompoundStm
+      │         └─CompoundStm
+      │           ├─ExprStm: Assignment
+      │           │          ├─Int
+      │           │          ├─Var(x) : Int
+      │           │          └─BinOp
+      │           │            ├─Int
+      │           │            ├─Lval
+      │           │            │ └─Var(x) : Int
+      │           │            ├─PLUS
+      │           │            └─Lval
+      │           │              └─Var(i) : Int
+      │           └─ExprStm: Assignment
+      │                      ├─Int
+      │                      ├─Var(y) : Int
+      │                      └─BinOp
+      │                        ├─Int
+      │                        ├─Lval
+      │                        │ └─Var(y) : Int
+      │                        ├─PLUS
+      │                        └─IntLit(2)
+      └─ReturnValStm: CommaExpr : int
+                      ├─Lval
+                      │ └─Var(x) : Int
+                      └─Lval
+                        └─Var(y) : Int
+test1Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @main () {
+ %i3 = alloca i64
+ %y2 = alloca i64
+ %x1 = alloca i64
+ store i64 0, i64* %x1
+ store i64 0, i64* %y2
+ store i64 0, i64* %i3
+ br label %for_cond4
+for_cond4:
+ %i_val8 = load i64, i64* %i3
+ %tmp9 = icmp slt i64 %i_val8, 3
+ br i1 %tmp9, label %for_body5, label %for_end7
+for_body5:
+ %x_val10 = load i64, i64* %x1
+ %i_val11 = load i64, i64* %i3
+ %tmp12 = add i64 %x_val10, %i_val11
+ store i64 %tmp12, i64* %x1
+ %y_val13 = load i64, i64* %y2
+ %tmp14 = add i64 %y_val13, 2
+ store i64 %tmp14, i64* %y2
+ br label %for_update6
+for_update6:
+ %i_val15 = load i64, i64* %i3
+ %tmp16 = add i64 %i_val15, 1
+ store i64 %tmp16, i64* %i3
+ br label %for_cond4
+for_end7:
+ %x_val17 = load i64, i64* %x1
+ %y_val18 = load i64, i64* %y2
+ ret i64 %y_val18
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-07-passing-tests/test05.dlp
@@ -2976,17 +3047,45 @@ Program
                       └─Var(result) : Int
 Param 'x' found with UID x and Type i64
 Param 'x' found with UID x and Type i64
-Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: x")
-Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: x")
-Test FAILED: Compiler reported an error unexpectedly.
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @increment (i64 %x) {
+ %tmp1 = add i64 %x, 1
+ ret i64 %tmp1
+}
+
+define i64 @double_and_increment (i64 %x) {
+ %x3 = alloca i64
+ %tmp2 = mul i64 %x, 2
+ store i64 %tmp2, i64* %x3
+ %x_val4 = load i64, i64* %x3
+ %tmp5 = call i64 @increment (i64 %x_val4)
+ ret i64 %tmp5
+}
+
+define i64 @main () {
+ %result7 = alloca i64
+ %value6 = alloca i64
+ store i64 3, i64* %value6
+ %value_val8 = load i64, i64* %value6
+ %tmp9 = call i64 @double_and_increment (i64 %value_val8)
+ store i64 %tmp9, i64* %result7
+ %result_val10 = load i64, i64* %result7
+ ret i64 %result_val10
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 =======================================
 Test Summary for assignment-07-passing-tests:
 Total Tests Run: 8
-Passed Tests:    6
-Failed Tests:    2
+Passed Tests:    8
+Failed Tests:    0
 =======================================
 =======================================
 Overall Test Summary:
-Total Failed Tests: 3
+Total Failed Tests: 0
 =======================================

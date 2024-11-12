@@ -100,15 +100,15 @@ let find_variable env sym =
     find_in_scopes all_scopes
 
 (* Generate code for expressions *)
-let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.expr) : (Ll.operand * Cfg.cfg_builder) =
+let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.expr) : (Ll.operand * environment * Cfg.cfg_builder) =
   match e with
   | TypedAst.Integer {int} ->
       let operand = Ll.IConst64 int in
-      (operand, cfg)
+      (operand, env, cfg)
 
   | TypedAst.Boolean {bool} ->
       let operand = Ll.BConst bool in
-      (operand, cfg)
+      (operand, env, cfg)
 
   | TypedAst.Lval lval ->
       codegen_lval env cfg lval
@@ -127,14 +127,14 @@ let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.e
 
   | TypedAst.CommaExpr {left; right; tp} ->
       (* Generate code for the left expression *)
-      let (_, cfg) = codegen_expr env cfg left in
+      let (_, env, cfg) = codegen_expr env cfg left in
       (* Discard the result of the left expression *)
 
       (* Generate code for the right expression *)
       codegen_expr env cfg right
       (* The result of the comma expression is the result of the right expression *)
 
-and codegen_lval (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * Cfg.cfg_builder) =
+and codegen_lval (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * environment * Cfg.cfg_builder) =
   match lval with
   | TypedAst.Var { ident; tp } ->
       (* Extract the symbol from the identifier *)
@@ -142,22 +142,22 @@ and codegen_lval (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lv
 
       (* First, try to find the variable in the parameters environment *)
       begin
-        match find_parameter env sym with
-        | Some (uid, ll_ty) ->
-            (* If it's a parameter, directly return the operand (no load needed) *)
-            (Ll.Id uid, cfg)
-        | None ->
-            (* If not found in parameters, try to find in the variables environment *)
-            match find_variable env sym with
-            | Some (uid, ll_ty) ->
-                (* If it's a local variable, generate the load instruction *)
-                let tmp_uid = generate_unique_tmp sym in
-                let load_insn = (Some tmp_uid, Ll.Load (ll_ty, Ll.Id uid)) in
-                let cfg = Cfg.add_insn load_insn cfg in
-                (Ll.Id tmp_uid, cfg)
-            | None ->
-                (* If the variable is not found in either environment, raise an error *)
-                raise (CodegenError ("Variable not found: " ^ Sym.name sym))
+          (* If not found in parameters, try to find in the variables environment *)
+          match find_variable env sym with
+          | Some (uid, ll_ty) ->
+              (* If it's a local variable, generate the load instruction *)
+              let tmp_uid = generate_unique_tmp sym in
+              let load_insn = (Some tmp_uid, Ll.Load (ll_ty, Ll.Id uid)) in
+              let cfg = Cfg.add_insn load_insn cfg in
+              (Ll.Id tmp_uid, env,  cfg)
+          | None ->
+                match find_parameter env sym with
+                  | Some (uid, ll_ty) ->
+                      (* If it's a parameter, directly return the operand (no load needed) *)
+                      (Ll.Id uid, env, cfg)
+                  | None ->
+                    (* If the variable is not found in either environment, raise an error *)
+                    raise (CodegenError ("Variable not found: " ^ Sym.name sym))
       end
 
 and codegen_binop env cfg left_expr op right_expr result_tp =
@@ -165,8 +165,8 @@ and codegen_binop env cfg left_expr op right_expr result_tp =
   | TypedAst.Lor | TypedAst.Land ->
       codegen_short_circuit_binop env cfg left_expr op right_expr result_tp
   | _ ->
-      let (left_operand, cfg) = codegen_expr env cfg left_expr in
-      let (right_operand, cfg) = codegen_expr env cfg right_expr in
+      let (left_operand, env, cfg) = codegen_expr env cfg left_expr in
+      let (right_operand,env, cfg) = codegen_expr env cfg right_expr in
       let result_ty = ll_type_of_typ result_tp in
       let tmp_uid = generate_unique_name "tmp" in
       let insn =
@@ -192,10 +192,10 @@ and codegen_binop env cfg left_expr op right_expr result_tp =
         | _ -> raise (CodegenError "Unsupported binary operation")
       in
       let cfg = Cfg.add_insn (Some tmp_uid, insn) cfg in
-      (Ll.Id tmp_uid, cfg)
+      (Ll.Id tmp_uid, env,  cfg)
 
 and codegen_unop env cfg op operand_expr result_tp =
-  let (operand, cfg) = codegen_expr env cfg operand_expr in
+  let (operand, env, cfg) = codegen_expr env cfg operand_expr in
   let result_ty = ll_type_of_typ result_tp in
   let tmp_uid = generate_unique_name "tmp" in
   let insn =
@@ -211,36 +211,51 @@ and codegen_unop env cfg op operand_expr result_tp =
         Ll.Binop (Ll.Xor, result_ty, operand, Ll.BConst true)
   in
   let cfg = Cfg.add_insn (Some tmp_uid, insn) cfg in
-  (Ll.Id tmp_uid, cfg)
+  (Ll.Id tmp_uid, env, cfg)
 
-and codegen_assignment env cfg lval rhs_expr result_tp =
-  (* First generate code for RHS expression *)
-  let (rhs_operand, cfg) = codegen_expr env cfg rhs_expr in
-  (* Get the address of the lvalue *)
-  let (lval_operand, cfg) = codegen_lval_address env cfg lval in
-  let ll_ty = ll_type_of_typ result_tp in
-  (* Generate store instruction *)
-  let store_insn = (None, Ll.Store (ll_ty, rhs_operand, lval_operand)) in
-  let cfg = Cfg.add_insn store_insn cfg in
-  (* The assignment expression itself results in the value assigned *)
-  (rhs_operand, cfg)
-
-and codegen_lval_address (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * Cfg.cfg_builder) =
-  match lval with
-  | TypedAst.Var {ident; tp} ->
-      (* Extract the symbol from the identifier *)
-      let sym = match ident with TypedAst.Ident {sym} -> sym in
-
-      (* Attempt to find the variable in the environment *)
-      begin
-        match find_variable env sym with
-        | Some (uid, ll_ty) ->
-            (* Return the address (uid) of the variable without dereferencing it *)
-            (Ll.Id uid, cfg)
-        | None ->
-            (* If the variable is not found in any scope, raise an error *)
-            raise (CodegenError ("Variable not found: " ^ Sym.name sym))
-      end
+  and codegen_assignment env cfg lval rhs_expr result_tp =
+    (* First generate code for RHS expression *)
+    let (rhs_operand, env, cfg) = codegen_expr env cfg rhs_expr in
+  
+    (* Get the address of the lvalue and updated environment *)
+    let (lval_operand, updated_env, cfg) = codegen_lval_address env cfg lval in
+  
+    let ll_ty = ll_type_of_typ result_tp in
+  
+    (* Generate store instruction *)
+    let store_insn = (None, Ll.Store (ll_ty, rhs_operand, lval_operand)) in
+    let cfg = Cfg.add_insn store_insn cfg in
+  
+    (* The assignment expression itself results in the value assigned *)
+    (rhs_operand, updated_env, cfg)
+  and codegen_lval_address (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * environment * Cfg.cfg_builder) =
+    match lval with
+    | TypedAst.Var {ident; tp} ->
+        let sym = match ident with TypedAst.Ident {sym} -> sym in
+  
+        (* Try finding the variable in vars, and if not found, look in params *)
+        begin
+          match find_variable env sym with
+          | Some (uid, ll_ty) -> (Ll.Id uid, env, cfg)
+          | None ->
+              (* Check in params if not found in vars *)
+              match find_parameter env sym with
+              | Some (param_uid, param_ll_ty) ->  
+                  (* Generate a unique identifier *)
+                  let new_uid = generate_unique_name (Sym.name sym) in
+                  (* Add the allocation for the variable to the CFG *)
+                  let cfg = Cfg.add_alloca (new_uid, param_ll_ty) cfg in
+                  
+                  (* Update environment: add to vars and remove from params *)
+                  let updated_env = {
+                      env with
+                      vars = Env.add sym (new_uid, param_ll_ty) env.vars;
+                      params = Env.remove sym env.params;
+                  } in
+                  (* Return the operand, updated environment, and cfg *)
+                  (Ll.Id new_uid, updated_env, cfg)
+              | None -> raise (CodegenError ("Variable not found: " ^ Sym.name sym))
+        end
 
 and codegen_call env cfg fname args result_tp =
   let sym = match fname with TypedAst.Ident {sym} -> sym in
@@ -250,7 +265,7 @@ and codegen_call env cfg fname args result_tp =
     match args with
     | [] -> (List.rev accum, cfg)
     | arg_expr :: rest ->
-        let (arg_operand, cfg) = codegen_expr env cfg arg_expr in
+        let (arg_operand, env, cfg) = codegen_expr env cfg arg_expr in
         let arg_type = type_of_expr arg_expr in
         let arg_ty = ll_type_of_typ arg_type in
         gen_args rest cfg ((arg_ty, arg_operand) :: accum)
@@ -261,12 +276,12 @@ and codegen_call env cfg fname args result_tp =
   if result_ty = Ll.Void then
     let call_insn = (None, Ll.Call (result_ty, ll_fname, arg_list)) in
     let cfg = Cfg.add_insn call_insn cfg in
-    (Ll.Null, cfg)
+    (Ll.Null,env, cfg)
   else
     let tmp_uid = generate_unique_name "tmp" in
     let call_insn = (Some tmp_uid, Ll.Call (result_ty, ll_fname, arg_list)) in
     let cfg = Cfg.add_insn call_insn cfg in
-    (Ll.Id tmp_uid, cfg)
+    (Ll.Id tmp_uid,env, cfg)
 
 and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
   let result_ty = ll_type_of_typ result_tp in
@@ -279,7 +294,7 @@ and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
   let result_ptr = Ll.Id tmp_uid in
 
   (* Evaluate left operand *)
-  let (left_operand, cfg) = codegen_expr env cfg left_expr in
+  let (left_operand, env, cfg) = codegen_expr env cfg left_expr in
 
   let cfg = match op with
     | TypedAst.Land ->
@@ -288,7 +303,7 @@ and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
         let cfg = Cfg.term_block (Ll.Cbr (left_operand, right_lbl, end_lbl)) cfg in
         (* Right operand evaluation *)
         let cfg = Cfg.start_block right_lbl cfg in
-        let (right_operand, cfg) = codegen_expr env cfg right_expr in
+        let (right_operand, env, cfg) = codegen_expr env cfg right_expr in
         let cfg = Cfg.add_insn (None, Ll.Store (result_ty, right_operand, result_ptr)) cfg in
         Cfg.term_block (Ll.Br end_lbl) cfg
     | TypedAst.Lor ->
@@ -297,7 +312,7 @@ and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
         let cfg = Cfg.term_block (Ll.Cbr (left_operand, end_lbl, right_lbl)) cfg in
         (* Right operand evaluation *)
         let cfg = Cfg.start_block right_lbl cfg in
-        let (right_operand, cfg) = codegen_expr env cfg right_expr in
+        let (right_operand,env, cfg) = codegen_expr env cfg right_expr in
         let cfg = Cfg.add_insn (None, Ll.Store (result_ty, right_operand, result_ptr)) cfg in
         Cfg.term_block (Ll.Br end_lbl) cfg
     | _ -> raise (CodegenError "Invalid operator for short-circuiting")
@@ -307,7 +322,7 @@ and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
   let cfg = Cfg.start_block end_lbl cfg in
   let tmp_val_uid = generate_unique_name "tmp_val" in
   let cfg = Cfg.add_insn (Some tmp_val_uid, Ll.Load (result_ty, result_ptr)) cfg in
-  (Ll.Id tmp_val_uid, cfg)
+  (Ll.Id tmp_val_uid,env, cfg)
 
 (* Generate code for variable declaration block *)
 and codegen_var_decl_block env cfg decls =
@@ -336,7 +351,7 @@ and codegen_var_decl_block env cfg decls =
       let env = { env with vars = Env.add sym (new_uid, ll_ty) env.vars } in
 
       (* Initialize the variable *)
-      let (init_operand, cfg) = codegen_expr env cfg body in
+      let (init_operand,env, cfg) = codegen_expr env cfg body in
 
       (* Generate the store instruction to initialize the variable with its value *)
       let store_insn = (None, Ll.Store (ll_ty, init_operand, Ll.Id new_uid)) in
@@ -369,7 +384,7 @@ let rec codegen_statement env cfg stmt =
       codegen_continue env cfg
 
   | TypedAst.ExprStm {expr = Some expr} ->
-      let (_, cfg) = codegen_expr env cfg expr in
+      let (_, env, cfg) = codegen_expr env cfg expr in
       (env, cfg)
 
   | TypedAst.ExprStm {expr = None} ->
@@ -378,7 +393,7 @@ let rec codegen_statement env cfg stmt =
 
   | TypedAst.IfThenElseStm {cond; thbr; elbro} ->
     (* Generate code for condition *)
-      let (cond_operand, cfg) = codegen_expr env cfg cond in
+      let (cond_operand, env, cfg) = codegen_expr env cfg cond in
       
       (* Create labels for the then, else branches, and the merge point *)
       let then_lbl = generate_unique_name "then" in
@@ -432,7 +447,7 @@ let rec codegen_statement env cfg stmt =
       (env, cfg)
 
   | TypedAst.ReturnStm {ret} ->
-      let (ret_operand, cfg) = codegen_expr env cfg ret in
+      let (ret_operand,env, cfg) = codegen_expr env cfg ret in
       let ret_type = type_of_expr ret in
       let ll_ty = ll_type_of_typ ret_type in
       let cfg = Cfg.term_block (Ll.Ret (ll_ty, Some ret_operand)) cfg in
@@ -457,7 +472,7 @@ and codegen_while env cfg cond body =
   let cfg = Cfg.start_block cond_lbl cfg in
 
   (* Generate code for condition *)
-  let (cond_operand, cfg) = codegen_expr env cfg cond in
+  let (cond_operand,env, cfg) = codegen_expr env cfg cond in
 
   (* Branch based on condition *)
   let cfg = Cfg.term_block (Ll.Cbr (cond_operand, body_lbl, end_lbl)) cfg in
@@ -490,7 +505,7 @@ and codegen_while env cfg cond body =
         let decl_block = match decl_block with TypedAst.DeclBlock {declarations} -> declarations in
           codegen_var_decl_block env cfg decl_block
       | Some (TypedAst.FIExpr expr) ->
-          let (_, cfg) = codegen_expr env cfg expr in
+          let (_, env, cfg) = codegen_expr env cfg expr in
           (env, cfg)
       | None ->
           (env, cfg)
@@ -511,7 +526,7 @@ and codegen_while env cfg cond body =
     (* Generate code for condition, if any *)
     let cfg = match cond with
       | Some cond_expr ->
-          let (cond_operand, cfg) = codegen_expr env cfg cond_expr in
+          let (cond_operand,env, cfg) = codegen_expr env cfg cond_expr in
           (* Branch based on condition *)
           Cfg.term_block (Ll.Cbr (cond_operand, body_lbl, end_lbl)) cfg
       | None ->
@@ -542,7 +557,7 @@ and codegen_while env cfg cond body =
     (* Generate code for update, if any *)
     let cfg = match update with
       | Some update_expr ->
-          let (_, cfg) = codegen_expr env cfg update_expr in
+          let (_,env, cfg) = codegen_expr env cfg update_expr in
           cfg
       | None -> cfg
     in
