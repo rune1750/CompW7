@@ -641,28 +641,35 @@ let codegen_prog (prog : TypedAst.program) : Ll.prog =
 
   in
 
-  let get_function_name func_decl =
-    match func_decl with
-    | TypedAst.Function { f_name; _ } ->
-        (* Unpack the Ident to get the sym, then extract the name string from sym *)
-        (match f_name with
-         | TypedAst.Ident { sym } -> Sym.name sym) in
+let get_function_name func_decl =
+  match func_decl with
+  | TypedAst.Function { f_name; _ } ->
+      (* Unpack the Ident to get the sym, then extract the name string from sym *)
+      (match f_name with
+       | TypedAst.Ident { sym } -> sym) in
 
-  (* Map each function in the program to an LLVM function declaration *)
-  let fdecls = 
-    List.map 
-      (fun func -> (Sym.symbol (get_function_name func), codegen_function env func)) 
-      prog 
-  in
-
-  (* Build the final LLVM program *)
-  {
-    tdecls = [];
-    extgdecls = [];
-    gdecls = [];
-    extfuns = [
-      (Sym.symbol "read_integer", ([], Ll.I64));
-      (Sym.symbol "print_integer", ([Ll.I64], Ll.Void));
-    ];
-    fdecls = fdecls;
-  }
+(* Map each function in the program to an LLVM function declaration *)
+let fdecls = 
+List.map 
+  (fun func -> 
+     let name = 
+       if Sym.name (get_function_name func) = "main" then 
+         Sym.symbol "dolphin_main" 
+       else 
+         get_function_name func 
+     in
+     (name, codegen_function env func)
+  ) 
+  prog 
+in
+(* Build the final LLVM program *)
+{
+  tdecls = [];
+  extgdecls = [];
+  gdecls = [];
+  extfuns = [
+    (Sym.symbol "read_integer", ([], Ll.I64));
+    (Sym.symbol "print_integer", ([Ll.I64], Ll.Void));
+  ];
+  fdecls = fdecls;
+}
