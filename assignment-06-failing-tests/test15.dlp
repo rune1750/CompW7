@@ -1,0 +1,5 @@
+// test10.dlp
+int main() {
+var x = true;
+return x;
+}

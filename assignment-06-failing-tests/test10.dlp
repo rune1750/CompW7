@@ -1,0 +1,6 @@
+// test10.dlp
+int main() {
+for (var i = 0; i < 10 i++) {  // Missing semicolon between condition and update
+    print_integer(i);
+}
+}

@@ -1,0 +1,6 @@
+// test1.dlp
+int main() {
+var x = 5;
+var neg_x = -x;
+return neg_x;
+}

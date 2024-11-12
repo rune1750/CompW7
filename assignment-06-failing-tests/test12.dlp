@@ -1,0 +1,5 @@
+// test10.dlp
+int main() {
+var x = print_integer(5);
+return 0;
+}

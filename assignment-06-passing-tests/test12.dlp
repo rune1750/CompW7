@@ -1,0 +1,7 @@
+// test1.dlp
+int main() {
+var a = 10;
+var b = 20;
+var is_equal = (a == b);
+return 0;
+}

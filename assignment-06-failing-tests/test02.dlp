@@ -1,0 +1,4 @@
+// test2.dlp
+int main() {
+var s = "This is an unclosed string;
+}

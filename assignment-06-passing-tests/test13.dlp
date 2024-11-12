@@ -1,0 +1,6 @@
+// test1.dlp
+int main() {
+var x = read_integer();
+print_integer(x);
+return 0;
+}

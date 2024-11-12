@@ -1,0 +1,5 @@
+// test7.dlp
+int main() {
+if (x > 0) {
+    print_integer(x;
+}}

@@ -1,0 +1,4 @@
+// test3.dlp
+int main() {
+var 1stVariable = 10;
+}

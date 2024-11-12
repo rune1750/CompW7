@@ -1,0 +1,5 @@
+// test5.dlp
+int main() {
+/* This is an unterminated comment
+var x = 10;
+}

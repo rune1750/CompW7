@@ -1,0 +1,4 @@
+// test4.dlp
+int main() {
+var x = 10 @ 20;  // '@' is not a valid operator
+}

@@ -1,0 +1,7 @@
+// Comma Expression in Loop Initialization
+int main() {
+  for (var i = 0, j = 10; i < j; i = i + 1, j = j - 1) {
+    // Loop body
+  }
+  return 0;
+}

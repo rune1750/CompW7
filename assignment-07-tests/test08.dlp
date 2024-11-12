@@ -1,0 +1,8 @@
+// Invalid Use - Comma Expression as Function Argument
+int foo(int x) {
+  return x;
+}
+
+int main() {
+  return foo((1, 2));  // Invalid use
+}

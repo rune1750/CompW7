@@ -1,0 +1,9 @@
+// Comma Expression with Function Calls
+void print_and_return(int x) {
+  print_integer(x);
+}
+
+int main() {
+  var x = (print_and_return(1), print_and_return(2), 42);
+  return x;  // Should return 42 and print 1 and 2
+}

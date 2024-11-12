@@ -1,0 +1,6 @@
+// test1.dlp
+int main() {
+var x = 10;
+x = x + 20;
+return x;
+}

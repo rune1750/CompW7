@@ -1,0 +1,7 @@
+// test8.dlp
+int main() {
+var x = 10;
+else {
+    x = 20;
+}
+}

@@ -1,0 +1,4 @@
+// test1.dlp
+int main() {
+var x = 9223372036854775808;  // This number is 2^63, which exceeds int64 limits
+}

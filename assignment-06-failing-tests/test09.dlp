@@ -1,0 +1,4 @@
+// test9.dlp
+int main() {
+10 = x;  // Left-hand side is not an l-value
+}
