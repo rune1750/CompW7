@@ -2240,24 +2240,24 @@ Program
       │                      └─IntLit(10)
       └─ReturnValStm: Lval
                       └─Var(result) : Int
+Param 'x' found with UID x and Type i64
+Param 'y' found with UID y and Type i64
 Code generation successful!
 Generated Code:
 declare i64 @read_integer()
 declare void @print_integer(i64)
 
-define i64 @add () {
- %x_val3 = load i64, i64* %x1
- %y_val4 = load i64, i64* %y2
- %tmp5 = add i64 %x_val3, %y_val4
- ret i64 %tmp5
+define i64 @add (i64 %x, i64 %y) {
+ %tmp1 = add i64 %x, %y
+ ret i64 %tmp1
 }
 
 define i64 @main () {
- %result6 = alloca i64
- %tmp7 = call i64 @add (i64 5, i64 10)
- store i64 %tmp7, i64* %result6
- %result_val8 = load i64, i64* %result6
- ret i64 %result_val8
+ %result2 = alloca i64
+ %tmp3 = call i64 @add (i64 5, i64 10)
+ store i64 %tmp3, i64* %result2
+ %result_val4 = load i64, i64* %result2
+ ret i64 %result_val4
 }
 
 Test PASSED: Compiler succeeded as expected.
@@ -2507,44 +2507,42 @@ Program
                       ├─FunName: is_even
                       └─Args
                         └─IntLit(4)
+Param 'x' found with UID x and Type i64
+Param 'x' found with UID x and Type i64
 Code generation successful!
 Generated Code:
 declare i64 @read_integer()
 declare void @print_integer(i64)
 
-define i64 @is_even () {
- %x_val2 = load i64, i64* %x1
- %tmp3 = icmp eq i64 %x_val2, 0
- br i1 %tmp3, label %then4, label %else5
-then4:
+define i64 @is_even (i64 %x) {
+ %tmp1 = icmp eq i64 %x, 0
+ br i1 %tmp1, label %then2, label %else3
+then2:
  ret i64 1
-else5:
- %x_val7 = load i64, i64* %x1
- %tmp8 = sub i64 %x_val7, 1
- %tmp9 = call i64 @is_odd (i64 %tmp8)
- ret i64 %tmp9
-if_end6:
+else3:
+ %tmp5 = sub i64 %x, 1
+ %tmp6 = call i64 @is_odd (i64 %tmp5)
+ ret i64 %tmp6
+if_end4:
  ret i64 0
 }
 
-define i64 @is_odd () {
- %x_val11 = load i64, i64* %x10
- %tmp12 = icmp eq i64 %x_val11, 0
- br i1 %tmp12, label %then13, label %else14
-then13:
+define i64 @is_odd (i64 %x) {
+ %tmp7 = icmp eq i64 %x, 0
+ br i1 %tmp7, label %then8, label %else9
+then8:
  ret i64 0
-else14:
- %x_val16 = load i64, i64* %x10
- %tmp17 = sub i64 %x_val16, 1
- %tmp18 = call i64 @is_even (i64 %tmp17)
- ret i64 %tmp18
-if_end15:
+else9:
+ %tmp11 = sub i64 %x, 1
+ %tmp12 = call i64 @is_even (i64 %tmp11)
+ ret i64 %tmp12
+if_end10:
  ret i64 0
 }
 
 define i64 @main () {
- %tmp19 = call i64 @is_even (i64 4)
- ret i64 %tmp19
+ %tmp13 = call i64 @is_even (i64 4)
+ ret i64 %tmp13
 }
 
 Test PASSED: Compiler succeeded as expected.
@@ -2726,24 +2724,24 @@ Program
       │                      └─IntLit(5)
       └─ReturnValStm: Lval
                       └─Var(product) : Int
+Param 'a' found with UID a and Type i64
+Param 'b' found with UID b and Type i64
 Code generation successful!
 Generated Code:
 declare i64 @read_integer()
 declare void @print_integer(i64)
 
-define i64 @multiply () {
- %a_val3 = load i64, i64* %a1
- %b_val4 = load i64, i64* %b2
- %tmp5 = mul i64 %a_val3, %b_val4
- ret i64 %tmp5
+define i64 @multiply (i64 %a, i64 %b) {
+ %tmp1 = mul i64 %a, %b
+ ret i64 %tmp1
 }
 
 define i64 @main () {
- %product6 = alloca i64
- %tmp7 = call i64 @multiply (i64 4, i64 5)
- store i64 %tmp7, i64* %product6
- %product_val8 = load i64, i64* %product6
- ret i64 %product_val8
+ %product2 = alloca i64
+ %tmp3 = call i64 @multiply (i64 4, i64 5)
+ store i64 %tmp3, i64* %product2
+ %product_val4 = load i64, i64* %product2
+ ret i64 %product_val4
 }
 
 Test PASSED: Compiler succeeded as expected.
@@ -2976,46 +2974,19 @@ Program
       │                        └─Var(value) : Int
       └─ReturnValStm: Lval
                       └─Var(result) : Int
-Code generation successful!
-Generated Code:
-declare i64 @read_integer()
-declare void @print_integer(i64)
-
-define i64 @increment () {
- %x_val2 = load i64, i64* %x1
- %tmp3 = add i64 %x_val2, 1
- ret i64 %tmp3
-}
-
-define i64 @double_and_increment () {
- %x_val5 = load i64, i64* %x4
- %tmp6 = mul i64 %x_val5, 2
- store i64 %tmp6, i64* %x4
- %x_val7 = load i64, i64* %x4
- %tmp8 = call i64 @increment (i64 %x_val7)
- ret i64 %tmp8
-}
-
-define i64 @main () {
- %result10 = alloca i64
- %value9 = alloca i64
- store i64 3, i64* %value9
- %value_val11 = load i64, i64* %value9
- %tmp12 = call i64 @double_and_increment (i64 %value_val11)
- store i64 %tmp12, i64* %result10
- %result_val13 = load i64, i64* %result10
- ret i64 %result_val13
-}
-
-Test PASSED: Compiler succeeded as expected.
+Param 'x' found with UID x and Type i64
+Param 'x' found with UID x and Type i64
+Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: x")
+Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: x")
+Test FAILED: Compiler reported an error unexpectedly.
 
 =======================================
 Test Summary for assignment-07-passing-tests:
 Total Tests Run: 8
-Passed Tests:    7
-Failed Tests:    1
+Passed Tests:    6
+Failed Tests:    2
 =======================================
 =======================================
 Overall Test Summary:
-Total Failed Tests: 2
+Total Failed Tests: 3
 =======================================

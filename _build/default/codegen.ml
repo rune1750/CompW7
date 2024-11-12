@@ -3,6 +3,9 @@ open Ll
 open Semant
 module Cfg = CfgBuilder
 module Sym = Symbol
+open Printf
+
+(* Exception for code generation errors *)
 
 exception CodegenError of string
 
@@ -10,20 +13,26 @@ exception CodegenError of string
 module Env = Sym.Table
 
 type environment = {
-  vars: (Ll.uid * Ll.ty) Env.t;             (* Current scope variable environment *)
-  env_stack: (Ll.uid * Ll.ty) Env.t list;   (* Stack to manage nested environments *)
-  loop_stack: (Ll.lbl * Ll.lbl) list;       (* Stack of (continue_lbl, break_lbl) for loops *)
+  vars: (Ll.uid * Ll.ty) Env.t;            (* Current scope variable environment *)
+  params: (Ll.uid * Ll.ty) Env.t;          (* Function parameters *)
+  env_stack: ( ((Ll.uid * Ll.ty) Env.t) * ((Ll.uid * Ll.ty) Env.t) ) list; (* Stack to manage nested environments, including variables, params, and loop stack *)
+  loop_stack: (Ll.lbl * Ll.lbl) list;      (* Stack of (continue_lbl, break_lbl) for loops *)
 }
-
 let push_env env =
-  { env with env_stack = env.vars :: env.env_stack }
+  { env with
+    env_stack = (env.vars, env.params) :: env.env_stack;
+  }
 
-(* Pop the environment from the stack and restore it *)
+(* Pop the environment from the stack and restore vars, params, and loop_stack *)
 let pop_env env =
   match env.env_stack with
   | [] -> failwith "Environment stack underflow"
-  | prev_vars :: stack -> { env with vars = prev_vars; env_stack = stack }
-
+  | (prev_vars, prev_params) :: stack -> 
+      { env with 
+        vars = prev_vars; 
+        params = prev_params; 
+        env_stack = stack 
+      }
 let tmp_counter = ref 0
 
 let generate_unique_tmp sym =
@@ -36,6 +45,7 @@ let generate_unique_name string =
 
 let empty_env = {
   vars = Env.empty;         (* Start with an empty variable map *)
+  params = Env.empty;       (* Start with an empty parameter map *)
   env_stack = [];           (* An empty list for the environment stack *)
   loop_stack = [];          (* Empty loop stack *)
 }
@@ -65,16 +75,29 @@ and type_of_lval lval =
 
 (* Helper function to find a variable in the environment *)
 let find_variable env sym =
-  let all_scopes = env.vars :: env.env_stack in
+  (* Traverse through the environment stack, checking each scope for the variable *)
+  let all_scopes = (env.vars, env.params) :: env.env_stack in
   let rec find_in_scopes scopes =
     match scopes with
     | [] -> None
-    | scope :: rest ->
-        match Env.find_opt sym scope with
+    | (vars, _) :: rest ->  (* Check the vars part of the tuple *)
+        match Env.find_opt sym vars with
         | Some x -> Some x
         | None -> find_in_scopes rest
   in
   find_in_scopes all_scopes
+  let find_parameter env sym =
+    (* Traverse through the environment stack, checking each scope for the parameter *)
+    let all_scopes = (env.vars, env.params) :: env.env_stack in
+    let rec find_in_scopes scopes =
+      match scopes with
+      | [] -> None
+      | (_, params) :: rest ->  (* Check the params part of the tuple *)
+          match Env.find_opt sym params with
+          | Some x -> Some x
+          | None -> find_in_scopes rest
+    in
+    find_in_scopes all_scopes
 
 (* Generate code for expressions *)
 let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.expr) : (Ll.operand * Cfg.cfg_builder) =
@@ -113,28 +136,28 @@ let rec codegen_expr (env : environment) (cfg : Cfg.cfg_builder) (e : TypedAst.e
 
 and codegen_lval (env : environment) (cfg : Cfg.cfg_builder) (lval : TypedAst.lval) : (Ll.operand * Cfg.cfg_builder) =
   match lval with
-  | TypedAst.Var {ident; tp} ->
+  | TypedAst.Var { ident; tp } ->
       (* Extract the symbol from the identifier *)
-      let sym = match ident with TypedAst.Ident {sym} -> sym in
+      let sym = match ident with TypedAst.Ident { sym } -> sym in
 
-      (* Attempt to find the variable in the environment *)
+      (* First, try to find the variable in the parameters environment *)
       begin
-        match find_variable env sym with
+        match find_parameter env sym with
         | Some (uid, ll_ty) ->
-            (* Generate a temporary unique ID for the loaded value *)
-            let tmp_uid = generate_unique_tmp sym in
-
-            (* Create the load instruction to load the value from memory *)
-            let load_insn = (Some tmp_uid, Ll.Load (ll_ty, Ll.Id uid)) in
-
-            (* Add the load instruction to the CFG *)
-            let cfg = Cfg.add_insn load_insn cfg in
-
-            (* Return the operand (the loaded value) and the updated CFG *)
-            (Ll.Id tmp_uid, cfg)
+            (* If it's a parameter, directly return the operand (no load needed) *)
+            (Ll.Id uid, cfg)
         | None ->
-            (* If the variable is not found in any scope, raise an error *)
-            raise (CodegenError ("Variable not found: " ^ Sym.name sym))
+            (* If not found in parameters, try to find in the variables environment *)
+            match find_variable env sym with
+            | Some (uid, ll_ty) ->
+                (* If it's a local variable, generate the load instruction *)
+                let tmp_uid = generate_unique_tmp sym in
+                let load_insn = (Some tmp_uid, Ll.Load (ll_ty, Ll.Id uid)) in
+                let cfg = Cfg.add_insn load_insn cfg in
+                (Ll.Id tmp_uid, cfg)
+            | None ->
+                (* If the variable is not found in either environment, raise an error *)
+                raise (CodegenError ("Variable not found: " ^ Sym.name sym))
       end
 
 and codegen_binop env cfg left_expr op right_expr result_tp =
@@ -555,48 +578,52 @@ and codegen_continue env cfg =
 let codegen_prog (prog : TypedAst.program) : Ll.prog =
   (* Start with an empty environment and an empty CFG builder *)
   let env = empty_env in
-
+  let cfg = Cfg.empty_cfg_builder in
   (* Function to generate an LLVM function declaration from a TypedAst.function_decl *)
-  let codegen_function (env : environment) (func : TypedAst.function_decl) : Ll.fdecl =
-    (* Initialize the CFG for the function *)
-    let cfg = Cfg.empty_cfg_builder in
-    (* Extract function details *)
-    let TypedAst.Function { f_name; return_type; params; body } = func in
+  let codegen_function (env : environment) (func_decl : TypedAst.function_decl) =
+    match func_decl with
+    | TypedAst.Function { f_name; return_type; params; body } ->
+       (* Convert parameter types to LLVM types *)
+       let param_types = List.map (fun (TypedAst.Param { typ; _ }) -> ll_type_of_typ typ) params in
+       (* Extract parameter names and generate unique names for each *)
+       let param_names = List.map (fun (TypedAst.Param { paramname = TypedAst.Ident { sym }; _ }) -> sym)
+       params in
 
-    let env_with_params = 
-      List.fold_left
-        (fun env (TypedAst.Param { paramname; typ }) ->
-           let param_sym = match paramname with
-             | TypedAst.Ident { sym } -> sym
-           in
-           let ll_ty = ll_type_of_typ typ in
-           let uid = generate_unique_name (Symbol.name param_sym) in
-           { env with vars = Env.add param_sym (uid, ll_ty) env.vars })
-        env
-        params
-    in
-    
-    (* Generate code for the function body *)
-    let (new_env, cfg) = codegen_statements env_with_params cfg body in
-    
-    (* Ensure the last block is properly terminated *)
-    let cfg =
-      if Cfg.is_labelled cfg then
-        Cfg.term_block (Ll.Ret (Ll.I64, Some (Ll.IConst64 0L))) cfg
-      else
-        cfg
-    in
+       (* Load parameters into the environment by modifying the param section directly *)
+       let params_env = List.fold_left2 (fun env param_name param_type ->
+        Env.add param_name (param_name, param_type) env
+      ) env.params param_names param_types in
 
-    (* Get the entry block and all other blocks in the CFG *)
-    let (entry_block, blocks) = Cfg.get_cfg cfg in
+       (* Update the environment to reflect the function parameters *)
+       let updated_env = { env with params = params_env } in
 
-    (* Construct the function type and declaration *)
-    let fdecl : Ll.fdecl = {
-      fty = ([], Ll.I64);  (* Modify the type according to actual parameter types and return type *)
-      param = [];          (* Parameter names and types *)
-      cfg = (entry_block, blocks);
-    } in
-    fdecl
+       let () =
+          List.iter (fun param_name ->
+            match Env.find_opt param_name updated_env.params with
+            | Some (uid, ll_ty) -> 
+                Printf.printf "Param '%s' found with UID %s and Type %s\n" (Symbol.name param_name) (Symbol.name uid) (Ll.string_of_ty ll_ty)
+            | None -> Printf.printf "Param '%s' not found in params environment\n" (Symbol.name param_name)
+          ) param_names in
+
+       (* Generate code for the function body with the updated environment *)
+       let (_, cfg) = codegen_statements updated_env cfg body in
+       (* Ensure the last block is properly terminated *)
+       let cfg =
+         if Cfg.is_labelled cfg then
+           Cfg.term_block (Ll.Ret (Ll.I64, Some (Ll.IConst64 0L))) cfg
+         else
+           cfg
+       in
+       (* Get the entry block and all other blocks in the CFG *)
+       let (entry_block, blocks) = Cfg.get_cfg cfg in
+       (* Construct the function type and declaration *)
+       let fdecl : Ll.fdecl = {
+         fty = (param_types, Ll.I64);  (* Use param_types for function type and return type *)
+         param = param_names;         (* Use param_names for function parameters *)
+         cfg = (entry_block, blocks);
+       } in
+       fdecl
+
   in
 
   let get_function_name func_decl =
