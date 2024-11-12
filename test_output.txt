@@ -653,8 +653,176 @@ Test PASSED: Compiler succeeded as expected.
 Found test file: assignment-06-passing-tests/test04.dlp
 Test #4: assignment-06-passing-tests/test04.dlp
 Running compiler: _build/default/driver.exe assignment-06-passing-tests/test04.dlp
-Lexical error at line 14, characters 9-10: Unexpected character: \'
-Test FAILED: Compiler reported an error unexpectedly.
+Parsing successful!
+AST:
+Program
+└─Function
+  ├─Name: main
+  ├─Return Type: Int
+  ├─Parameters
+  └─Body
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: i
+    │            ├─Type: 
+    │            └─Body: IntLit(0)
+    ├─WhileStm
+    │ ├─Cond: BinOp
+    │ │       ├─Lval
+    │ │       │ └─Var(i)
+    │ │       ├─Lt
+    │ │       └─IntLit(5)
+    │ └─Body: CompoundStm
+    │         └─CompoundStm
+    │           ├─DeclStm: VarDecl
+    │           │          └─Declaration
+    │           │            ├─Ident: j
+    │           │            ├─Type: 
+    │           │            └─Body: IntLit(0)
+    │           ├─WhileStm
+    │           │ ├─Cond: BinOp
+    │           │ │       ├─Lval
+    │           │ │       │ └─Var(j)
+    │           │ │       ├─Lt
+    │           │ │       └─IntLit(5)
+    │           │ └─Body: CompoundStm
+    │           │         └─CompoundStm
+    │           │           ├─IfStm
+    │           │           │ ├─Cond: BinOp
+    │           │           │ │       ├─Lval
+    │           │           │ │       │ └─Var(j)
+    │           │           │ │       ├─Eq
+    │           │           │ │       └─IntLit(2)
+    │           │           │ └─Then-Branch: CompoundStm
+    │           │           │                └─CompoundStm
+    │           │           │                  └─BreakStm
+    │           │           └─ExprStm: Assignment
+    │           │                      ├─Var(j)
+    │           │                      └─BinOp
+    │           │                        ├─Lval
+    │           │                        │ └─Var(j)
+    │           │                        ├─PLUS
+    │           │                        └─IntLit(1)
+    │           └─ExprStm: Assignment
+    │                      ├─Var(i)
+    │                      └─BinOp
+    │                        ├─Lval
+    │                        │ └─Var(i)
+    │                        ├─PLUS
+    │                        └─IntLit(1)
+    └─ReturnValStm: IntLit(0)
+Variables in environment:
+  i 
+Semantic analysis successful!
+Typed AST:
+Program
+└─Functions
+  └─Function
+    ├─Name: main
+    ├─Return Type: Int
+    ├─Params
+    └─Body
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: i
+      │            ├─Type: Int
+      │            └─Body: IntLit(0)
+      ├─WhileStm
+      │ ├─Cond: BinOp
+      │ │       ├─Bool
+      │ │       ├─Lval
+      │ │       │ └─Var(i) : Int
+      │ │       ├─Lt
+      │ │       └─IntLit(5)
+      │ └─Body: CompoundStm
+      │         └─CompoundStm
+      │           ├─DeclStm: VarDecl
+      │           │          └─Declaration
+      │           │            ├─Ident: j
+      │           │            ├─Type: Int
+      │           │            └─Body: IntLit(0)
+      │           ├─WhileStm
+      │           │ ├─Cond: BinOp
+      │           │ │       ├─Bool
+      │           │ │       ├─Lval
+      │           │ │       │ └─Var(j) : Int
+      │           │ │       ├─Lt
+      │           │ │       └─IntLit(5)
+      │           │ └─Body: CompoundStm
+      │           │         └─CompoundStm
+      │           │           ├─IfStm
+      │           │           │ ├─Cond: BinOp
+      │           │           │ │       ├─Bool
+      │           │           │ │       ├─Lval
+      │           │           │ │       │ └─Var(j) : Int
+      │           │           │ │       ├─Eq
+      │           │           │ │       └─IntLit(2)
+      │           │           │ └─Then-Branch: CompoundStm
+      │           │           │                └─CompoundStm
+      │           │           │                  └─BreakStm
+      │           │           └─ExprStm: Assignment
+      │           │                      ├─Int
+      │           │                      ├─Var(j) : Int
+      │           │                      └─BinOp
+      │           │                        ├─Int
+      │           │                        ├─Lval
+      │           │                        │ └─Var(j) : Int
+      │           │                        ├─PLUS
+      │           │                        └─IntLit(1)
+      │           └─ExprStm: Assignment
+      │                      ├─Int
+      │                      ├─Var(i) : Int
+      │                      └─BinOp
+      │                        ├─Int
+      │                        ├─Lval
+      │                        │ └─Var(i) : Int
+      │                        ├─PLUS
+      │                        └─IntLit(1)
+      └─ReturnValStm: IntLit(0)
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @main () {
+ %j7 = alloca i64
+ %i1 = alloca i64
+ store i64 0, i64* %i1
+ br label %while_cond2
+while_cond2:
+ %i_val5 = load i64, i64* %i1
+ %tmp6 = icmp slt i64 %i_val5, 5
+ br i1 %tmp6, label %while_body3, label %while_end4
+while_body3:
+ store i64 0, i64* %j7
+ br label %while_cond8
+while_cond8:
+ %j_val11 = load i64, i64* %j7
+ %tmp12 = icmp slt i64 %j_val11, 5
+ br i1 %tmp12, label %while_body9, label %while_end10
+while_body9:
+ %j_val13 = load i64, i64* %j7
+ %tmp14 = icmp eq i64 %j_val13, 2
+ br i1 %tmp14, label %then15, label %else16
+then15:
+ br label %while_end10
+else16:
+ br label %if_end17
+if_end17:
+ %j_val18 = load i64, i64* %j7
+ %tmp19 = add i64 %j_val18, 1
+ store i64 %tmp19, i64* %j7
+ br label %while_cond8
+while_end10:
+ %i_val20 = load i64, i64* %i1
+ %tmp21 = add i64 %i_val20, 1
+ store i64 %tmp21, i64* %i1
+ br label %while_cond2
+while_end4:
+ ret i64 0
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-06-passing-tests/test05.dlp
@@ -1852,8 +2020,8 @@ Test PASSED: Compiler succeeded as expected.
 =======================================
 Test Summary for assignment-06-passing-tests:
 Total Tests Run: 15
-Passed Tests:    14
-Failed Tests:    1
+Passed Tests:    15
+Failed Tests:    0
 =======================================
 Running tests in assignment-07-failing-tests...
 ---------------------------------------
@@ -2072,9 +2240,27 @@ Program
       │                      └─IntLit(10)
       └─ReturnValStm: Lval
                       └─Var(result) : Int
-Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: x")
-Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: x")
-Test FAILED: Compiler reported an error unexpectedly.
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @add () {
+ %x_val3 = load i64, i64* %x1
+ %y_val4 = load i64, i64* %y2
+ %tmp5 = add i64 %x_val3, %y_val4
+ ret i64 %tmp5
+}
+
+define i64 @main () {
+ %result6 = alloca i64
+ %tmp7 = call i64 @add (i64 5, i64 10)
+ store i64 %tmp7, i64* %result6
+ %result_val8 = load i64, i64* %result6
+ ret i64 %result_val8
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-07-passing-tests/test02.dlp
@@ -2321,9 +2507,47 @@ Program
                       ├─FunName: is_even
                       └─Args
                         └─IntLit(4)
-Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: x")
-Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: x")
-Test FAILED: Compiler reported an error unexpectedly.
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @is_even () {
+ %x_val2 = load i64, i64* %x1
+ %tmp3 = icmp eq i64 %x_val2, 0
+ br i1 %tmp3, label %then4, label %else5
+then4:
+ ret i64 1
+else5:
+ %x_val7 = load i64, i64* %x1
+ %tmp8 = sub i64 %x_val7, 1
+ %tmp9 = call i64 @is_odd (i64 %tmp8)
+ ret i64 %tmp9
+if_end6:
+ ret i64 0
+}
+
+define i64 @is_odd () {
+ %x_val11 = load i64, i64* %x10
+ %tmp12 = icmp eq i64 %x_val11, 0
+ br i1 %tmp12, label %then13, label %else14
+then13:
+ ret i64 0
+else14:
+ %x_val16 = load i64, i64* %x10
+ %tmp17 = sub i64 %x_val16, 1
+ %tmp18 = call i64 @is_even (i64 %tmp17)
+ ret i64 %tmp18
+if_end15:
+ ret i64 0
+}
+
+define i64 @main () {
+ %tmp19 = call i64 @is_even (i64 4)
+ ret i64 %tmp19
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-07-passing-tests/test04.dlp
@@ -2336,8 +2560,91 @@ Test FAILED: Compiler reported an error unexpectedly.
 Found test file: assignment-07-passing-tests/test05.dlp
 Test #5: assignment-07-passing-tests/test05.dlp
 Running compiler: _build/default/driver.exe assignment-07-passing-tests/test05.dlp
-Parser error at line 4, character 33
-Test FAILED: Compiler reported an error unexpectedly.
+Parsing successful!
+AST:
+Program
+└─Function
+  ├─Name: main
+  ├─Return Type: Int
+  ├─Parameters
+  └─Body
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: x
+    │            ├─Type: Int
+    │            └─Body: IntLit(5)
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: y
+    │            ├─Type: Int
+    │            └─Body: CommaExpr
+    │                    ├─BinOp
+    │                    │ ├─Lval
+    │                    │ │ └─Var(x)
+    │                    │ ├─Gt
+    │                    │ └─IntLit(0)
+    │                    └─BinOp
+    │                      ├─Lval
+    │                      │ └─Var(x)
+    │                      ├─Mul
+    │                      └─IntLit(2)
+    └─ReturnValStm: Lval
+                    └─Var(y)
+Variables in environment:
+  y 
+  x 
+Semantic analysis successful!
+Typed AST:
+Program
+└─Functions
+  └─Function
+    ├─Name: main
+    ├─Return Type: Int
+    ├─Params
+    └─Body
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: x
+      │            ├─Type: Int
+      │            └─Body: IntLit(5)
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: y
+      │            ├─Type: Int
+      │            └─Body: CommaExpr : int
+      │                    ├─BinOp
+      │                    │ ├─Bool
+      │                    │ ├─Lval
+      │                    │ │ └─Var(x) : Int
+      │                    │ ├─Gt
+      │                    │ └─IntLit(0)
+      │                    └─BinOp
+      │                      ├─Int
+      │                      ├─Lval
+      │                      │ └─Var(x) : Int
+      │                      ├─Mul
+      │                      └─IntLit(2)
+      └─ReturnValStm: Lval
+                      └─Var(y) : Int
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @main () {
+ %y2 = alloca i64
+ %x1 = alloca i64
+ store i64 5, i64* %x1
+ %x_val3 = load i64, i64* %x1
+ %tmp4 = icmp sgt i64 %x_val3, 0
+ %x_val5 = load i64, i64* %x1
+ %tmp6 = mul i64 %x_val5, 2
+ store i64 %tmp6, i64* %y2
+ %y_val7 = load i64, i64* %y2
+ ret i64 %y_val7
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-07-passing-tests/test06.dlp
@@ -2419,9 +2726,27 @@ Program
       │                      └─IntLit(5)
       └─ReturnValStm: Lval
                       └─Var(product) : Int
-Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: a")
-Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: a")
-Test FAILED: Compiler reported an error unexpectedly.
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @multiply () {
+ %a_val3 = load i64, i64* %a1
+ %b_val4 = load i64, i64* %b2
+ %tmp5 = mul i64 %a_val3, %b_val4
+ ret i64 %tmp5
+}
+
+define i64 @main () {
+ %product6 = alloca i64
+ %tmp7 = call i64 @multiply (i64 4, i64 5)
+ store i64 %tmp7, i64* %product6
+ %product_val8 = load i64, i64* %product6
+ ret i64 %product_val8
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 ---------------------------------------
 Found test file: assignment-07-passing-tests/test09.dlp
@@ -2651,17 +2976,46 @@ Program
       │                        └─Var(value) : Int
       └─ReturnValStm: Lval
                       └─Var(result) : Int
-Unhandled exception: Dune__exe__Codegen.CodegenError("Variable not found: x")
-Fatal error: exception Dune__exe__Codegen.CodegenError("Variable not found: x")
-Test FAILED: Compiler reported an error unexpectedly.
+Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @increment () {
+ %x_val2 = load i64, i64* %x1
+ %tmp3 = add i64 %x_val2, 1
+ ret i64 %tmp3
+}
+
+define i64 @double_and_increment () {
+ %x_val5 = load i64, i64* %x4
+ %tmp6 = mul i64 %x_val5, 2
+ store i64 %tmp6, i64* %x4
+ %x_val7 = load i64, i64* %x4
+ %tmp8 = call i64 @increment (i64 %x_val7)
+ ret i64 %tmp8
+}
+
+define i64 @main () {
+ %result10 = alloca i64
+ %value9 = alloca i64
+ store i64 3, i64* %value9
+ %value_val11 = load i64, i64* %value9
+ %tmp12 = call i64 @double_and_increment (i64 %value_val11)
+ store i64 %tmp12, i64* %result10
+ %result_val13 = load i64, i64* %result10
+ ret i64 %result_val13
+}
+
+Test PASSED: Compiler succeeded as expected.
 
 =======================================
 Test Summary for assignment-07-passing-tests:
 Total Tests Run: 8
-Passed Tests:    2
-Failed Tests:    6
+Passed Tests:    7
+Failed Tests:    1
 =======================================
 =======================================
 Overall Test Summary:
-Total Failed Tests: 8
+Total Failed Tests: 2
 =======================================

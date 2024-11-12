@@ -562,9 +562,22 @@ let codegen_prog (prog : TypedAst.program) : Ll.prog =
     let cfg = Cfg.empty_cfg_builder in
     (* Extract function details *)
     let TypedAst.Function { f_name; return_type; params; body } = func in
+
+    let env_with_params = 
+      List.fold_left
+        (fun env (TypedAst.Param { paramname; typ }) ->
+           let param_sym = match paramname with
+             | TypedAst.Ident { sym } -> sym
+           in
+           let ll_ty = ll_type_of_typ typ in
+           let uid = generate_unique_name (Symbol.name param_sym) in
+           { env with vars = Env.add param_sym (uid, ll_ty) env.vars })
+        env
+        params
+    in
     
     (* Generate code for the function body *)
-    let (env, cfg) = codegen_statements env cfg body in
+    let (new_env, cfg) = codegen_statements env_with_params cfg body in
     
     (* Ensure the last block is properly terminated *)
     let cfg =

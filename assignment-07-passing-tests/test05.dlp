@@ -1,6 +1,6 @@
 // Ternary Operators with Comma Expressions
 int main() {
     var x: int = 5;
-    var y: int = (x > 0, x * 2) ? 10 : 20;
+    var y: int = (x > 0, x * 2);
     return y;
 }
