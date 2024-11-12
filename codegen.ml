@@ -57,6 +57,7 @@ let rec type_of_expr expr =
   | TypedAst.Lval lval -> type_of_lval lval
   | TypedAst.Assignment {tp; _} -> tp
   | TypedAst.Call {tp; _} -> tp
+  | TypedAst.CommaExpr {tp; _} -> tp
 
 and type_of_lval lval =
   match lval with
@@ -286,7 +287,7 @@ and codegen_short_circuit_binop env cfg left_expr op right_expr result_tp =
   (Ll.Id tmp_val_uid, cfg)
 
 (* Generate code for variable declaration block *)
-and codegen_var_decl_block env cfg (TypedAst.DeclBlock decls) =
+and codegen_var_decl_block env cfg decls =
   List.fold_left
     (fun (env, cfg) (TypedAst.Declaration {name; tp; body}) ->
       (* Same as VarDeclStm case *)
@@ -329,6 +330,7 @@ and codegen_var_decl_block env cfg (TypedAst.DeclBlock decls) =
 let rec codegen_statement env cfg stmt =
   match stmt with
   | TypedAst.VarDeclStm decl_block ->
+      let decl_block = match decl_block with TypedAst.DeclBlock {declarations} -> declarations in
       codegen_var_decl_block env cfg decl_block
 
   | TypedAst.WhileStm {cond; body} ->
@@ -462,6 +464,7 @@ and codegen_while env cfg cond body =
     (* Handle init *)
     let (env, cfg) = match init with
       | Some (TypedAst.FIDecl decl_block) ->
+        let decl_block = match decl_block with TypedAst.DeclBlock {declarations} -> declarations in
           codegen_var_decl_block env cfg decl_block
       | Some (TypedAst.FIExpr expr) ->
           let (_, cfg) = codegen_expr env cfg expr in
@@ -550,28 +553,55 @@ and codegen_continue env cfg =
 
 (* Generate code for the entire program *)
 let codegen_prog (prog : TypedAst.program) : Ll.prog =
+  (* Start with an empty environment and an empty CFG builder *)
   let env = empty_env in
-  (* Start building the CFG *)
-  let cfg = Cfg.empty_cfg_builder in
-  (* Generate code for statements *)
-  let (env, cfg) = codegen_statements env cfg prog in
-  (* Ensure the last block is properly terminated *)
-  let cfg =
-    if (Cfg.is_labelled cfg) then
-      Cfg.term_block (Ll.Ret (Ll.I64, Some (Ll.IConst64 0L))) cfg
-    else
-      cfg
+
+  (* Function to generate an LLVM function declaration from a TypedAst.function_decl *)
+  let codegen_function (env : environment) (func : TypedAst.function_decl) : Ll.fdecl =
+    (* Initialize the CFG for the function *)
+    let cfg = Cfg.empty_cfg_builder in
+    (* Extract function details *)
+    let TypedAst.Function { f_name; return_type; params; body } = func in
+    
+    (* Generate code for the function body *)
+    let (env, cfg) = codegen_statements env cfg body in
+    
+    (* Ensure the last block is properly terminated *)
+    let cfg =
+      if Cfg.is_labelled cfg then
+        Cfg.term_block (Ll.Ret (Ll.I64, Some (Ll.IConst64 0L))) cfg
+      else
+        cfg
+    in
+
+    (* Get the entry block and all other blocks in the CFG *)
+    let (entry_block, blocks) = Cfg.get_cfg cfg in
+
+    (* Construct the function type and declaration *)
+    let fdecl : Ll.fdecl = {
+      fty = ([], Ll.I64);  (* Modify the type according to actual parameter types and return type *)
+      param = [];          (* Parameter names and types *)
+      cfg = (entry_block, blocks);
+    } in
+    fdecl
   in
-  (* Get the CFG *)
-  let (entry_block, blocks) = Cfg.get_cfg cfg in
-  (* Create the function declaration *)
-  let fdecl : Ll.fdecl = {
-    fty = ([], Ll.I64);  (* No parameters, returns i64 *)
-    param = [];
-    cfg = (entry_block, blocks);
-  } in
-  (* Build the program *)
-  let prog : Ll.prog = {
+
+  let get_function_name func_decl =
+    match func_decl with
+    | TypedAst.Function { f_name; _ } ->
+        (* Unpack the Ident to get the sym, then extract the name string from sym *)
+        (match f_name with
+         | TypedAst.Ident { sym } -> Sym.name sym) in
+
+  (* Map each function in the program to an LLVM function declaration *)
+  let fdecls = 
+    List.map 
+      (fun func -> (Sym.symbol (get_function_name func), codegen_function env func)) 
+      prog 
+  in
+
+  (* Build the final LLVM program *)
+  {
     tdecls = [];
     extgdecls = [];
     gdecls = [];
@@ -579,9 +609,5 @@ let codegen_prog (prog : TypedAst.program) : Ll.prog =
       (Sym.symbol "read_integer", ([], Ll.I64));
       (Sym.symbol "print_integer", ([Ll.I64], Ll.Void));
     ];
-    fdecls = [
-      (Sym.symbol "dolphin_main", fdecl);
-    ];
-  } in
-  prog
-
+    fdecls = fdecls;
+  }

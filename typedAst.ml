@@ -42,7 +42,7 @@ type for_init =
   | FIExpr of expr
 
 type statement =
-  | VarDeclStm of { decl_block : declaration_block }
+  | VarDeclStm of declaration_block
   | ExprStm of { expr : expr option }
   | IfThenElseStm of { cond : expr; thbr : statement; elbro : statement option }
   | WhileStm of { cond : expr; body : statement}

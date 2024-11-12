@@ -243,7 +243,7 @@ let process_single_decl (env, typed_decls: environment * single_declaration list
       let final_env, typed_decls = List.fold_left process_single_decl (env, []) declarations in
 
       (* Reverse the list of typed declarations since fold_left accumulates them in reverse order *)
-      TypedAst.VarDeclStm { decl_block = DeclBlock {declarations = List.rev typed_decls }}, final_env
+      TypedAst.VarDeclStm (TypedAst.DeclBlock { declarations = List.rev typed_decls }), final_env
 
     | BreakStm { loc } ->
         if not env.in_loop then

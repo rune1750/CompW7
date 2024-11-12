@@ -76,7 +76,7 @@ let for_init_to_tree = function
 
 let rec statement_to_tree c =
   match c with
-  | VarDeclStm { decl_block } -> 
+  | VarDeclStm decl_block -> 
       PBox.hlist ~bars:false [PBox.line "DeclStm: "; declaration_block_to_tree decl_block]
   | ExprStm { expr } -> 
       PBox.hlist ~bars:false [Pretty.make_info_node_line "ExprStm: "; Option.fold ~none:PBox.empty ~some:expr_to_tree expr]
