@@ -67,11 +67,6 @@ let validate_expr_context env (expr : Ast.expr) loc =
         msg = "Comma expressions are not allowed as expression statements";
         loc = loc
       }))
-  | CommaExpr _, FuncArgContext ->
-      raise (TypeError (InvalidCommaExpression {
-        msg = "Comma expressions cannot appear as function arguments";
-        loc = loc
-      }))
   | _ -> ()
 
 

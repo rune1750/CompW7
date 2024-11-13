@@ -1,0 +1,11 @@
+//Comma expression as update part of for loop
+int main () {
+    var x = 0;
+    var y = 0;
+
+    for (x = 0; x < 5; x = x + 1, y = y + 1) {
+        print_integer(x);
+        print_integer(y);
+    }
+    return 0;
+}

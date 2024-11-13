@@ -3079,10 +3079,172 @@ define i64 @dolphin_main () {
 
 Test PASSED: Compiler succeeded as expected.
 
+---------------------------------------
+Found test file: assignment-07-passing-tests/test11.dlp
+Test #9: assignment-07-passing-tests/test11.dlp
+Running compiler: _build/default/driver.exe assignment-07-passing-tests/test11.dlp
+Parsing successful!
+AST:
+Program
+└─Function
+  ├─Name: main
+  ├─Return Type: Int
+  ├─Parameters
+  └─Body
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: x
+    │            ├─Type: 
+    │            └─Body: IntLit(0)
+    ├─DeclStm: VarDecl
+    │          └─Declaration
+    │            ├─Ident: y
+    │            ├─Type: 
+    │            └─Body: IntLit(0)
+    ├─ForStm
+    │ ├─Init: ForInitExpr: Assignment
+    │ │                    ├─Var(x)
+    │ │                    └─IntLit(0)
+    │ ├─Cond: BinOp
+    │ │       ├─Lval
+    │ │       │ └─Var(x)
+    │ │       ├─Lt
+    │ │       └─IntLit(5)
+    │ ├─Update: CommaExpr
+    │ │         ├─Assignment
+    │ │         │ ├─Var(x)
+    │ │         │ └─BinOp
+    │ │         │   ├─Lval
+    │ │         │   │ └─Var(x)
+    │ │         │   ├─PLUS
+    │ │         │   └─IntLit(1)
+    │ │         └─Assignment
+    │ │           ├─Var(y)
+    │ │           └─BinOp
+    │ │             ├─Lval
+    │ │             │ └─Var(y)
+    │ │             ├─PLUS
+    │ │             └─IntLit(1)
+    │ └─Body: CompoundStm
+    │         └─CompoundStm
+    │           ├─ExprStm: Call
+    │           │          ├─FunName: print_integer
+    │           │          └─Args
+    │           │            └─Lval
+    │           │              └─Var(x)
+    │           └─ExprStm: Call
+    │                      ├─FunName: print_integer
+    │                      └─Args
+    │                        └─Lval
+    │                          └─Var(y)
+    └─ReturnValStm: IntLit(0)
+Variables in environment:
+  y 
+  x 
+Semantic analysis successful!
+Typed AST:
+Program
+└─Functions
+  └─Function
+    ├─Name: main
+    ├─Return Type: Int
+    ├─Params
+    └─Body
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: x
+      │            ├─Type: Int
+      │            └─Body: IntLit(0)
+      ├─DeclStm: VarDecl
+      │          └─Declaration
+      │            ├─Ident: y
+      │            ├─Type: Int
+      │            └─Body: IntLit(0)
+      ├─ForStm
+      │ ├─Init: ForInitExpr: Assignment
+      │ │                    ├─Int
+      │ │                    ├─Var(x) : Int
+      │ │                    └─IntLit(0)
+      │ ├─Cond: BinOp
+      │ │       ├─Bool
+      │ │       ├─Lval
+      │ │       │ └─Var(x) : Int
+      │ │       ├─Lt
+      │ │       └─IntLit(5)
+      │ ├─Update: CommaExpr : int
+      │ │         ├─Assignment
+      │ │         │ ├─Int
+      │ │         │ ├─Var(x) : Int
+      │ │         │ └─BinOp
+      │ │         │   ├─Int
+      │ │         │   ├─Lval
+      │ │         │   │ └─Var(x) : Int
+      │ │         │   ├─PLUS
+      │ │         │   └─IntLit(1)
+      │ │         └─Assignment
+      │ │           ├─Int
+      │ │           ├─Var(y) : Int
+      │ │           └─BinOp
+      │ │             ├─Int
+      │ │             ├─Lval
+      │ │             │ └─Var(y) : Int
+      │ │             ├─PLUS
+      │ │             └─IntLit(1)
+      │ └─Body: CompoundStm
+      │         └─CompoundStm
+      │           ├─ExprStm: Call
+      │           │          ├─Void
+      │           │          ├─FunName: print_integer
+      │           │          └─Args
+      │           │            └─Lval
+      │           │              └─Var(x) : Int
+      │           └─ExprStm: Call
+      │                      ├─Void
+      │                      ├─FunName: print_integer
+      │                      └─Args
+      │                        └─Lval
+      │                          └─Var(y) : Int
+      └─ReturnValStm: IntLit(0)
+test1Code generation successful!
+Generated Code:
+declare i64 @read_integer()
+declare void @print_integer(i64)
+
+define i64 @dolphin_main () {
+ %y2 = alloca i64
+ %x1 = alloca i64
+ store i64 0, i64* %x1
+ store i64 0, i64* %y2
+ store i64 0, i64* %x1
+ br label %for_cond3
+for_cond3:
+ %x_val7 = load i64, i64* %x1
+ %tmp8 = icmp slt i64 %x_val7, 5
+ br i1 %tmp8, label %for_body4, label %for_end6
+for_body4:
+ %x_val9 = load i64, i64* %x1
+ call void @print_integer (i64 %x_val9)
+ %y_val10 = load i64, i64* %y2
+ call void @print_integer (i64 %y_val10)
+ br label %for_update5
+for_update5:
+ %x_val11 = load i64, i64* %x1
+ %tmp12 = add i64 %x_val11, 1
+ store i64 %tmp12, i64* %x1
+ %y_val13 = load i64, i64* %y2
+ %tmp14 = add i64 %y_val13, 1
+ store i64 %tmp14, i64* %y2
+ br label %for_cond3
+for_end6:
+ ret i64 0
+}
+
+Test PASSED: Compiler succeeded as expected.
+
 =======================================
 Test Summary for assignment-07-passing-tests:
-Total Tests Run: 8
-Passed Tests:    8
+Total Tests Run: 9
+Passed Tests:    9
 Failed Tests:    0
 =======================================
 =======================================

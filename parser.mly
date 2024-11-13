@@ -202,7 +202,9 @@ for_init:
       { FIExpr $1 }
 
 expr_opt:
-    expr
+    expr COMMA expr
+      { Some (CommaExpr { left = $1; right = $3; loc = mk_loc $startpos $endpos }) }
+  | expr
       { Some $1 }
   | /* empty */
       { None }
@@ -269,8 +271,8 @@ expr:
       { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
-      
-  | LPAREN expr COMMA expr RPAREN { CommaExpr { left = $2; right = $4; loc = mk_loc $startpos $endpos } }
+  | LPAREN expr COMMA expr RPAREN 
+      { CommaExpr { left = $2; right = $4; loc = mk_loc $startpos $endpos } }
 
 assignment:
     lval ASSIGN expr
