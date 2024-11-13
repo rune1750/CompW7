@@ -45,6 +45,8 @@
 %type <Ast.expr> call
 %type <Ast.expr list> arg_list
 %type <Ast.typ> type_expr
+
+
 %type <Ast.parameter> param
 %type <Ast.parameter list> param_list
 %type <Ast.function_decl list> functions
@@ -52,15 +54,12 @@
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
-%nonassoc LPAREN
+%nonassoc EQ NEQ LT LE GT GE ASSIGN
 %left LOR
 %left LAND
-%right ASSIGN
-%left EQ NEQ LT LE GT GE 
 %left PLUS MINUS
-%left COMMA
 %left MUL DIV REM
-%right UMINUS LNOT 
+%right UMINUS LNOT
 
 %%
 
@@ -212,13 +211,21 @@ compound_stmt:
     LBRACE statements RBRACE
       { CompoundStm { stms = $2; loc = mk_loc $startpos $endpos } }
 
+call:
+    IDENT LPAREN arg_list RPAREN
+      { Call { fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; args = $3; loc = mk_loc $startpos $endpos } }
+
+arg_list:
+    /* empty */
+      { [] }
+  | expr
+      { [$1] }
+  | expr COMMA arg_list
+      { $1 :: $3 }
 
 
 expr:
-
-  | expr COMMA expr RPAREN
-      { CommaExpr { left = $1; right = $3F; loc = mk_loc $startpos $endpos } }
-  | expr PLUS expr
+    expr PLUS expr
       { BinOp { left = $1; op = Plus { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
   | expr MINUS expr
       { BinOp { left = $1; op = Minus { loc = mk_loc $startpos $endpos }; right = $3; loc = mk_loc $startpos $endpos } }
@@ -254,28 +261,16 @@ expr:
       { Lval $1 }
   | assignment
       { $1 }
+  | call
+      { $1 }
   | INT_LIT
       { Integer { int = $1; loc = mk_loc $startpos $endpos } }
   | TRUE
       { Boolean { bool = true; loc = mk_loc $startpos $endpos } }
   | FALSE
       { Boolean { bool = false; loc = mk_loc $startpos $endpos } }
-  | call
-      { $1 }
-
-call:
-    IDENT LPAREN arg_list RPAREN
-      { Call { fname = Ident { name = $1; loc = mk_loc $startpos $endpos }; args = $3; loc = mk_loc $startpos $endpos } }
-
-arg_list:
-    /* empty */
-      { [] }
-  | expr
-      { [$1] }
-  | expr COMMA arg_list
-      { $1 :: $3 }
-
-
+      
+  | LPAREN expr COMMA expr RPAREN { CommaExpr { left = $2; right = $4; loc = mk_loc $startpos $endpos } }
 
 assignment:
     lval ASSIGN expr
